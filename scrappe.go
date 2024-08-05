@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
-	
+
 	"github.com/gocolly/colly/v2"
 	"github.com/oarkflow/anonymizer"
 )
@@ -56,28 +56,28 @@ func RenameHeaders(inputFile, outputFile string, headerMapping map[string]string
 		return fmt.Errorf("failed to open file: %v", err)
 	}
 	defer file.Close()
-	
+
 	// Read the CSV data
 	reader := csv.NewReader(file)
 	records, err := reader.ReadAll()
 	if err != nil {
 		return fmt.Errorf("failed to read CSV data: %v", err)
 	}
-	
+
 	if len(records) == 0 {
 		return fmt.Errorf("no data in CSV file")
 	}
-	
+
 	// Get the header row
 	oldHeaders := records[0]
 	newHeaders := make([]string, len(oldHeaders))
-	
+
 	// Create a map for quick lookup of old header names
 	oldHeaderMap := make(map[string]int)
 	for i, header := range oldHeaders {
 		oldHeaderMap[header] = i
 	}
-	
+
 	// Map old headers to new headers
 	for oldHeader, newHeader := range headerMapping {
 		if index, found := oldHeaderMap[oldHeader]; found {
@@ -86,36 +86,36 @@ func RenameHeaders(inputFile, outputFile string, headerMapping map[string]string
 			return fmt.Errorf("old header '%s' not found in CSV file", oldHeader)
 		}
 	}
-	
+
 	// Fill in any headers that are not in the mapping with their original names
 	for i, header := range oldHeaders {
 		if newHeaders[i] == "" {
 			newHeaders[i] = header
 		}
 	}
-	
+
 	// Replace the header row with the new headers
 	records[0] = newHeaders
-	
+
 	// Open the output CSV file
 	outFile, err := os.Create(outputFile)
 	if err != nil {
 		return fmt.Errorf("failed to create output file: %v", err)
 	}
 	defer outFile.Close()
-	
+
 	// Write the modified CSV data
 	writer := csv.NewWriter(outFile)
 	err = writer.WriteAll(records)
 	if err != nil {
 		return fmt.Errorf("failed to write CSV data: %v", err)
 	}
-	
+
 	writer.Flush()
 	if err := writer.Error(); err != nil {
 		return fmt.Errorf("error during flush: %v", err)
 	}
-	
+
 	return nil
 }
 
@@ -164,10 +164,10 @@ func scrapeData(url string, date string) [][]string {
 		colly.AllowedDomains("www.sharesansar.com"),
 		colly.UserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.115 Safari/537.36"),
 	)
-	
+
 	var df [][]string
 	var headers []string
-	
+
 	c.OnHTML("table.table-bordered", func(e *colly.HTMLElement) {
 		e.ForEach("tr", func(_ int, el *colly.HTMLElement) {
 			var row []string
@@ -182,23 +182,23 @@ func scrapeData(url string, date string) [][]string {
 			}
 		})
 	})
-	
+
 	c.OnRequest(func(r *colly.Request) {
 		fmt.Println("Visiting", r.URL.String())
 		r.Ctx.Put("date", date)
 	})
-	
+
 	c.OnResponse(func(r *colly.Response) {
 		fmt.Println("Visited", r.Request.URL.String())
 	})
-	
+
 	c.OnError(func(r *colly.Response, err error) {
 		log.Println("Error:", r.StatusCode, err)
 	})
-	
+
 	// Visit the target URL
 	c.Visit(url)
-	
+
 	return append([][]string{headers}, df...)
 }
 
@@ -227,10 +227,10 @@ func saveCSV(data [][]string, filename string) {
 		log.Fatalf("Could not create CSV file: %v", err)
 	}
 	defer file.Close()
-	
+
 	writer := csv.NewWriter(file)
 	defer writer.Flush()
-	
+
 	for _, row := range data {
 		err := writer.Write(row)
 		if err != nil {
