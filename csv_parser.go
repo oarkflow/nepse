@@ -2,30 +2,29 @@ package main
 
 import (
 	"fmt"
-	"io/fs"
+	"os"
 	"path/filepath"
 	"reflect"
 	"runtime"
 	"slices"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/oarkflow/convert"
 	"github.com/oarkflow/errors"
 	"github.com/oarkflow/search"
-	"github.com/oarkflow/search/web"
 
 	"github.com/jumpei00/gostocktrade/nepse/csv"
 )
 
-func main() {
+func InitCSVStock() {
 	files, err := loadAllCSVFiles("./data/date")
 	if err != nil {
 		panic(err)
 	}
 	engine, err := search.SetEngine[map[string]any]("stock", &search.Config{})
 	engine.InsertWithPool(files, runtime.NumCPU(), 1000)
-	web.StartServer("0.0.0.0:3003")
 }
 
 type StockData struct {
@@ -206,26 +205,60 @@ func parseCSVFile(filename string) ([]map[string]any, error) {
 	return mapData, nil
 }
 
-func loadAllCSVFiles(directory string) ([]map[string]any, error) {
-	var allData []map[string]any
+func loadAllCSVFiles(directory string) ([]map[string]interface{}, error) {
+	var allData []map[string]interface{}
+	var mu sync.Mutex
+	var wg sync.WaitGroup
+	var errList []error
+	dataCh := make(chan []map[string]interface{})
+	errCh := make(chan error)
+	doneCh := make(chan struct{})
 
-	err := filepath.Walk(directory, func(path string, info fs.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		if !info.IsDir() && filepath.Ext(path) == ".csv" {
-			data, err := parseCSVFile(path)
+	// Walk through the directory
+	go func() {
+		err := filepath.Walk(directory, func(path string, info os.FileInfo, err error) error {
 			if err != nil {
 				return err
 			}
-			allData = append(allData, data...)
+			if !info.IsDir() && filepath.Ext(path) == ".csv" {
+				wg.Add(1)
+				go func(path string) {
+					defer wg.Done()
+					data, err := parseCSVFile(path)
+					if err != nil {
+						errCh <- err
+						return
+					}
+					dataCh <- data
+				}(path)
+			}
+			return nil
+		})
+
+		if err != nil {
+			errCh <- err
 		}
-		return nil
-	})
 
-	if err != nil {
-		return nil, err
+		// Wait for all goroutines to finish
+		wg.Wait()
+		close(doneCh)
+	}()
+
+	for {
+		select {
+		case data := <-dataCh:
+			mu.Lock()
+			allData = append(allData, data...)
+			mu.Unlock()
+		case err := <-errCh:
+			mu.Lock()
+			errList = append(errList, err)
+			mu.Unlock()
+		case <-doneCh:
+			if len(errList) > 0 {
+				return nil, fmt.Errorf("errors occurred: %v", errList)
+			}
+			return allData, nil
+		}
 	}
-
-	return allData, nil
 }

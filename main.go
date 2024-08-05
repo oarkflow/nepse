@@ -8,6 +8,7 @@ import (
 )
 
 func main() {
+	InitCSVStock()
 	config.InitConfig()
 	log.SetLogging()
 	models.InitDB()

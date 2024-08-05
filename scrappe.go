@@ -13,6 +13,29 @@ import (
 	"github.com/oarkflow/anonymizer"
 )
 
+var headerMapping = map[string]string{
+	"Symbol":        "Symbol",
+	"Conf.":         "Confidence",
+	"Open":          "OpenPrice",
+	"High":          "HighPrice",
+	"Low":           "LowPrice",
+	"Close":         "ClosePrice",
+	"VWAP":          "VWAP",
+	"Vol":           "Volume",
+	"Prev. Close":   "PreviousClose",
+	"Turnover":      "Turnover",
+	"Trans.":        "Transactions",
+	"Diff":          "Difference",
+	"Range":         "Range",
+	"Diff %":        "DifferencePercentage",
+	"Range %":       "RangePercentage",
+	"VWAP %":        "VWAPPercentage",
+	"120 Days":      "120Days",
+	"180 Days":      "180Days",
+	"52 Weeks High": "52WeeksHigh",
+	"52 Weeks Low":  "52WeeksLow",
+}
+
 func renameDir(dir, fromPattern, toPattern string) error {
 	dirInfos, err := os.ReadDir(dir)
 	if err != nil {
@@ -119,44 +142,30 @@ func RenameHeaders(inputFile, outputFile string, headerMapping map[string]string
 	return nil
 }
 
-func main() {
-	// Define the old and new header mappings
-	headerMapping := map[string]string{
-		"Symbol":        "Symbol",
-		"Conf.":         "Confidence",
-		"Open":          "OpenPrice",
-		"High":          "HighPrice",
-		"Low":           "LowPrice",
-		"Close":         "ClosePrice",
-		"VWAP":          "VWAP",
-		"Vol":           "Volume",
-		"Prev. Close":   "PreviousClose",
-		"Turnover":      "Turnover",
-		"Trans.":        "Transactions",
-		"Diff":          "Difference",
-		"Range":         "Range",
-		"Diff %":        "DifferencePercentage",
-		"Range %":       "RangePercentage",
-		"VWAP %":        "VWAPPercentage",
-		"120 Days":      "120Days",
-		"180 Days":      "180Days",
-		"52 Weeks High": "52WeeksHigh",
-		"52 Weeks Low":  "52WeeksLow",
-	}
-	err := renameCSVFileHeaders("./data", headerMapping)
+func ma1in() {
+	err := renameDir("./data/date2", "<year>_<month>_<date>.csv", "<year>-<month>-<date>.csv")
 	if err != nil {
 		panic(err)
 	}
-	// parseDate(time.Now())
+	// Define the old and new header mappings
+	/*err := renameCSVFileHeaders("./data", headerMapping)
+	if err != nil {
+		panic(err)
+	}*/
+	err = parseDate(time.Now())
+	if err != nil {
+		panic(err)
+	}
 }
 
-func parseDate(date time.Time) {
+func parseDate(date time.Time) error {
 	dateStr := date.Format("01/02/2006")
-	// date := "2021-08-31"
 	url := "https://www.sharesansar.com/today-share-price"
 	df := scrapeData(url, dateStr)
 	finalDf := cleanDf(df)
-	saveCSV(finalDf, fmt.Sprintf("data/%s.csv", date.Format(time.DateOnly)))
+	path := fmt.Sprintf("data/date/%s.csv", date.Format(time.DateOnly))
+	saveCSV(finalDf, path)
+	return RenameHeaders(path, path, headerMapping)
 }
 
 func scrapeData(url string, date string) [][]string {

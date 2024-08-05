@@ -2,8 +2,6 @@ module github.com/jumpei00/gostocktrade
 
 go 1.22.3
 
-toolchain go1.22.5
-
 require (
 	github.com/araddon/dateparse v0.0.0-20210429162001-6b43995a97de
 	github.com/gocolly/colly/v2 v2.1.0
