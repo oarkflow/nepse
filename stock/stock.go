@@ -1,7 +1,6 @@
 package stock
 
 import (
-	"github.com/sirupsen/logrus"
 	"time"
 
 	"github.com/markcheno/go-quote"
@@ -15,10 +14,6 @@ const timeFormat = "2006-01-02"
 func GetStockData(symbol string, dayPeriod int, adj bool) (*quote.Quote, error) {
 	endDay := time.Now()
 	startDay := endDay.AddDate(0, 0, -dayPeriod)
-
-	logrus.Infof("get %s stock data from yahoo", symbol)
-	stock, err := quote.NewQuoteFromYahoo(
-		symbol, startDay.Format(timeFormat), endDay.Format(timeFormat), quote.Daily, adj)
-
+	stock, err := quote.NewQuoteFromYahoo(symbol, startDay.Format(timeFormat), endDay.Format(timeFormat), quote.Daily, adj)
 	return &stock, err
 }

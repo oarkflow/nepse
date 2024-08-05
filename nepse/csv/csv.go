@@ -11,14 +11,14 @@ import (
 	"strings"
 	"sync"
 	"time"
-	
+
 	"github.com/oarkflow/errors"
 	"github.com/oarkflow/gologger"
 	"github.com/oarkflow/log"
 	"github.com/oarkflow/pkg/expr"
 	"github.com/oarkflow/xid"
-	
-	"github.com/oarkflow/nepse/csv/csvtool"
+
+	"github.com/jumpei00/gostocktrade/nepse/csv/csvtool"
 )
 
 type Query struct {
@@ -51,17 +51,17 @@ func (q *Query) Query() csvtool.SingleQueryResult {
 	if q.QueryString == "" {
 		q.QueryString = "SELECT * FROM @file LIMIT 20"
 	}
-	
+
 	fmt.Println(fmt.Sprintf("Query started at %s", time.Now()))
 	data, err := QueryCsv(q.File, q.QueryString)
-	
+
 	fmt.Println(fmt.Sprintf("Query ended at %s", time.Now()))
 	if err != nil {
 		log.Info().Msg("Query execution failed ")
-		
+
 		panic(err)
 	}
-	
+
 	return data
 }
 
@@ -71,7 +71,7 @@ func (q *Query) ExportCsv() {
 	if err != nil {
 		panic(err)
 	}
-	
+
 	writer.WriteString(strings.Join(data.Colnames, ","))
 	fmt.Println(fmt.Sprintf("Writing to file started at %s", time.Now()))
 	for _, v := range data.Vals {
@@ -91,7 +91,7 @@ func QueryCsv(fileName string, query string, delim ...rune) (csvtool.SingleQuery
 	}
 	file, err := os.OpenFile(fileName, os.O_RDONLY, os.ModePerm)
 	if err != nil {
-		
+
 		return csvtool.SingleQueryResult{}, errors.New(fmt.Sprintf("File: %s not found or unable to open file", fileName))
 	}
 	defer file.Close()
@@ -101,15 +101,15 @@ func QueryCsv(fileName string, query string, delim ...rune) (csvtool.SingleQuery
 		QueryString: queryString,
 		Comma:       delimeter,
 	}
-	
+
 	res, err := csvtool.CsvQuery(&q)
 	if err != nil {
-		
+
 		return res, errors.NewE(err, "error on CsvQuery", "")
 	}
-	
+
 	return res, nil
-	
+
 }
 
 func QueryCsvWithStats(fileName string, query string) (csvtool.SingleQueryResult, *csvtool.CsvDetail, error) {
@@ -128,18 +128,18 @@ func QueryCsvWithStats(fileName string, query string) (csvtool.SingleQueryResult
 func CsvStats(fileName string, query string) (*csvtool.CsvDetail, error) {
 	file, err := os.OpenFile(fileName, os.O_RDONLY, os.ModePerm)
 	if err != nil {
-		
+
 		return nil, errors.New("File not found or unable to open file")
 	}
 	defer file.Close()
-	
+
 	queryString := strings.Replace(query, "@file", "'"+fileName+"'", 1)
 	queryString = cleanQuery(queryString)
 	q := &csvtool.QuerySpecs{
 		QueryString: queryString,
 		Comma:       ',',
 	}
-	
+
 	data, err := csvtool.CsvStats(q)
 	if err != nil {
 		return nil, errors.NewE(err, "unable to CsvStats", "")
@@ -256,7 +256,7 @@ func QueryCsvData(file string, field string, search string, queryString string) 
 		queryString = "SELECT * FROM @file"
 	}
 	queryString = queryString + "  LIMIT 20"
-	
+
 	return QueryCsv(file, queryString)
 }
 
@@ -446,7 +446,7 @@ func ToMap(reader io.Reader, phoneKey string, comma rune, defaultPrefix string) 
 	}
 	jobs := make(chan []byte)
 	results := make(chan map[string]any)
-	
+
 	wg := new(sync.WaitGroup)
 	for w := 1; w <= 2; w++ {
 		wg.Add(1)
@@ -458,17 +458,17 @@ func ToMap(reader io.Reader, phoneKey string, comma rune, defaultPrefix string) 
 		}
 		close(jobs)
 	}()
-	
+
 	go func() {
 		wg.Wait()
 		close(results)
 	}()
-	
+
 	var data []map[string]any
 	for v := range results {
 		data = append(data, v)
 	}
-	
+
 	return data
 }
 

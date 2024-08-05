@@ -9,13 +9,13 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	
+
 	"github.com/oarkflow/convert"
 	"github.com/oarkflow/errors"
 	"github.com/oarkflow/search"
 	"github.com/oarkflow/search/web"
-	
-	"github.com/oarkflow/nepse/csv"
+
+	"github.com/jumpei00/gostocktrade/nepse/csv"
 )
 
 func main() {
@@ -70,7 +70,7 @@ func removeCommas(value string) string {
 // ConvertMapToStockData converts a map[string]any to a StockData instance.
 func convertMapToStockData(dataMap map[string]any) (StockData, error) {
 	var stock StockData
-	
+
 	// Helper function to convert values and handle errors
 	parseFloat := func(key string) (float64, error) {
 		switch val := dataMap[key].(type) {
@@ -87,14 +87,14 @@ func convertMapToStockData(dataMap map[string]any) (StockData, error) {
 			return 0, fmt.Errorf("value for key %s is not a %v", key, reflect.TypeOf(val))
 		}
 	}
-	
+
 	// Convert map values to StockData fields
 	var err error
 	var ok bool
 	if stock.Symbol, ok = dataMap["Symbol"].(string); !ok {
 		return stock, fmt.Errorf("invalid type for Symbol")
 	}
-	
+
 	stock.Confidence, err = parseFloat("Confidence")
 	if err != nil {
 		return stock, err
@@ -131,13 +131,13 @@ func convertMapToStockData(dataMap map[string]any) (StockData, error) {
 	if err != nil {
 		return stock, err
 	}
-	
+
 	if transactions, ok := convert.ToInt(dataMap["Transactions"]); ok {
 		stock.Transactions = transactions
 	} else {
 		return stock, fmt.Errorf("invalid type for Transactions")
 	}
-	
+
 	stock.Difference, err = parseFloat("Difference")
 	if err != nil {
 		return stock, err
@@ -174,7 +174,7 @@ func convertMapToStockData(dataMap map[string]any) (StockData, error) {
 	if err != nil {
 		return stock, err
 	}
-	
+
 	return stock, nil
 }
 
@@ -208,7 +208,7 @@ func parseCSVFile(filename string) ([]map[string]any, error) {
 
 func loadAllCSVFiles(directory string) ([]map[string]any, error) {
 	var allData []map[string]any
-	
+
 	err := filepath.Walk(directory, func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -222,10 +222,10 @@ func loadAllCSVFiles(directory string) ([]map[string]any, error) {
 		}
 		return nil
 	})
-	
+
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return allData, nil
 }
