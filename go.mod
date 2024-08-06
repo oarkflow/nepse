@@ -9,7 +9,6 @@ require (
 	github.com/markcheno/go-quote v0.0.0-20240225224950-d942c652292c
 	github.com/markcheno/go-talib v0.0.0-20190307022042-cd53a9264d70
 	github.com/oarkflow/anonymizer v0.0.8
-	github.com/oarkflow/convert v0.0.1
 	github.com/oarkflow/date v0.0.4
 	github.com/oarkflow/errors v0.0.6
 	github.com/oarkflow/gologger v0.0.1
@@ -42,6 +41,7 @@ require (
 	github.com/klauspost/compress v1.17.9 // indirect
 	github.com/kr/pretty v0.3.0 // indirect
 	github.com/mattn/go-sqlite3 v1.14.22 // indirect
+	github.com/oarkflow/convert v0.0.1 // indirect
 	github.com/oarkflow/dipper v0.0.2 // indirect
 	github.com/oarkflow/expr v0.0.10 // indirect
 	github.com/oarkflow/filters v0.0.18 // indirect
@@ -50,7 +50,6 @@ require (
 	github.com/oarkflow/maps v0.0.0-20240406152114-fc5a94538f01 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/saintfish/chardet v0.0.0-20230101081208-5e3ef4b5456d // indirect
-	github.com/smartystreets/goconvey v1.6.4 // indirect
 	github.com/temoto/robotstxt v1.1.2 // indirect
 	golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56 // indirect
 	golang.org/x/net v0.27.0 // indirect

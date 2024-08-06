@@ -22,7 +22,7 @@ func InitCSVStock() {
 		panic(err)
 	}
 	log.Info().Msg("Indexing stock")
-	_, err = loadAllCSVFiles("./data/date", func(data []map[string]any) {
+	_, err = LoadAllCsvFiles("./data/date", func(data []map[string]any) {
 		engine.InsertWithPool(data, runtime.NumCPU(), 1000)
 	})
 	if err != nil {
@@ -101,7 +101,7 @@ type FileInfo struct {
 	Name string
 }
 
-func loadAllCSVFiles(directory string, callback func([]map[string]any)) ([]map[string]interface{}, error) {
+func LoadAllCsvFiles(directory string, callback func([]map[string]any)) ([]map[string]interface{}, error) {
 	var allData []map[string]interface{}
 	var files []FileInfo
 	err := filepath.Walk(directory, func(path string, info os.FileInfo, err error) error {
@@ -129,6 +129,38 @@ func loadAllCSVFiles(directory string, callback func([]map[string]any)) ([]map[s
 		if callback == nil {
 			allData = append(allData, data...)
 		}
+		log.Info().Msgf("File %s parsed", path.Path)
+	}
+	return allData, nil
+}
+
+func LoadAllCsvFilesToMap(directory string) (map[string][]map[string]any, error) {
+	allData := make(map[string][]map[string]any)
+	var files []FileInfo
+	err := filepath.Walk(directory, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if !info.IsDir() && strings.HasSuffix(info.Name(), ".csv") {
+			files = append(files, FileInfo{Path: path, Name: info.Name()})
+		}
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	sort.Slice(files, func(i, j int) bool {
+		return files[i].Name > files[j].Name
+	})
+	for _, path := range files {
+		date := strings.ReplaceAll(strings.TrimSuffix(filepath.Base(path.Path), ".csv"), "_", "-")
+		data, err := ParseCSVFile(path.Path, nil)
+		if err != nil {
+			return nil, err
+		}
+		allData[date] = data
 		log.Info().Msgf("File %s parsed", path.Path)
 	}
 	return allData, nil
