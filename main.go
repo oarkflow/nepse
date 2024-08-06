@@ -6,13 +6,13 @@ import (
 	"github.com/jumpei00/gostocktrade/config"
 	"github.com/jumpei00/gostocktrade/log"
 	"github.com/jumpei00/gostocktrade/nepse"
-	"github.com/jumpei00/gostocktrade/scrap"
+	"github.com/jumpei00/gostocktrade/scrape"
 )
 
 func main() {
 	go func() {
 		nepse.InitCSVStock()
-		scrap.Scrape()
+		scrape.Scrape()
 	}()
 	config.InitConfig()
 	log.SetLogging()

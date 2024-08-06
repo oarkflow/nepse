@@ -11,7 +11,7 @@ import (
 
 	"github.com/jumpei00/gostocktrade/app/models"
 	"github.com/jumpei00/gostocktrade/config"
-	"github.com/jumpei00/gostocktrade/scrap"
+	"github.com/jumpei00/gostocktrade/scrape"
 	"github.com/jumpei00/gostocktrade/stock"
 )
 
@@ -139,8 +139,8 @@ func Run() {
 	http.HandleFunc("/", IndexAPIHandler)
 	http.HandleFunc("/candles", CandleGetAPIHandler)
 	http.HandleFunc("/backtest", BacktestAPIHandler)
-	http.HandleFunc("/scrap", func(w http.ResponseWriter, req *http.Request) {
-		scrap.Scrape()
+	http.HandleFunc("/scrape", func(w http.ResponseWriter, req *http.Request) {
+		scrape.Scrape()
 	})
 	logrus.Fatalln(http.ListenAndServe(fmt.Sprintf(":%d", config.Config.Port), nil))
 }

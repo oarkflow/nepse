@@ -1,4 +1,4 @@
-package scrap
+package scrape
 
 import (
 	"encoding/csv"
@@ -73,7 +73,13 @@ func renameCSVFileHeaders(dir string, newHeaders map[string]string) error {
 }
 
 // RenameHeaders renames the headers in the CSV file based on the provided mapping
-func RenameHeaders(inputFile, outputFile string, headerMapping map[string]string) error {
+func RenameHeaders(inputFile, outputFile string, headMap ...map[string]string) error {
+	var mapping map[string]string
+	if len(headMap) > 0 {
+		mapping = headMap[0]
+	} else {
+		mapping = headerMapping
+	}
 	// Open the input CSV file
 	file, err := os.Open(inputFile)
 	if err != nil {
@@ -103,7 +109,7 @@ func RenameHeaders(inputFile, outputFile string, headerMapping map[string]string
 	}
 
 	// Map old headers to new headers
-	for oldHeader, newHeader := range headerMapping {
+	for oldHeader, newHeader := range mapping {
 		if index, found := oldHeaderMap[oldHeader]; found {
 			newHeaders[index] = newHeader
 		} else {
@@ -153,13 +159,14 @@ func Scrape() error {
 	if err != nil {
 		return err
 	}
+	dateStr := now.Format("01/02/2006")
 	if result.Count == 0 {
 		err = parseDate(now)
 		if err != nil {
 			return err
 		}
 	}
-	return nil
+	return RenameHeaders(dateStr, dateStr)
 }
 
 /*err := renameDir("./data/date2", "<year>_<month>_<date>.csv", "<year>-<month>-<date>.csv")
@@ -179,7 +186,7 @@ func parseDate(date time.Time) error {
 	finalDf := cleanDf(df)
 	path := fmt.Sprintf("data/date/%s.csv", date.Format(time.DateOnly))
 	saveCSV(finalDf, path)
-	return RenameHeaders(path, path, headerMapping)
+	return RenameHeaders(path, path)
 }
 
 func scrapeData(url string, date string) [][]string {
