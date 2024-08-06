@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/jumpei00/gostocktrade/nepse"
-	"github.com/jumpei00/gostocktrade/utils"
+	"github.com/oarkflow/nepse/nepse"
+	"github.com/oarkflow/nepse/utils"
 )
 
 func mai1n() {

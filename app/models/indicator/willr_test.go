@@ -1,8 +1,8 @@
 package indicator_test
 
 import (
+	"github.com/oarkflow/nepse/app/models/indicator"
 	"github.com/stretchr/testify/assert"
-	"github.com/jumpei00/gostocktrade/app/models/indicator"
 	"testing"
 )
 
@@ -30,14 +30,14 @@ func TestWillrProfit(t *testing.T) {
 		WillrSignals: []indicator.WillrSignal{
 			indicator.WillrSignal{
 				Symbol: "VOO",
-				Time: 0,
-				Price: 100,
+				Time:   0,
+				Price:  100,
 				Action: indicator.BUY,
 			},
 			indicator.WillrSignal{
 				Symbol: "VOO",
-				Time: 1,
-				Price: 150,
+				Time:   1,
+				Price:  150,
 				Action: indicator.SELL,
 			},
 		},
@@ -50,7 +50,7 @@ func TestWillrProfit(t *testing.T) {
 	signals.WillrSignals = append(signals.WillrSignals, indicator.WillrSignal{
 		Symbol: "VOO", Time: 2, Price: 100, Action: indicator.BUY,
 	})
-	
+
 	// when buy at 100, sell at 150, buy at 100,
 	// expected profit is 50
 	assert.Equal(50.0, signals.Profit())

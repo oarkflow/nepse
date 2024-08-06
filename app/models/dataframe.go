@@ -1,8 +1,8 @@
 package models
 
 import (
-	"github.com/jumpei00/gostocktrade/app/models/indicator"
 	"github.com/markcheno/go-talib"
+	"github.com/oarkflow/nepse/app/models/indicator"
 	"github.com/sirupsen/logrus"
 )
 

@@ -9,10 +9,10 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/jumpei00/gostocktrade/app/models"
-	"github.com/jumpei00/gostocktrade/config"
-	"github.com/jumpei00/gostocktrade/scrape"
-	"github.com/jumpei00/gostocktrade/stock"
+	"github.com/oarkflow/nepse/app/models"
+	"github.com/oarkflow/nepse/config"
+	"github.com/oarkflow/nepse/scrape"
+	"github.com/oarkflow/nepse/stock"
 )
 
 // JSONError is json error massage

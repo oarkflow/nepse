@@ -1,8 +1,8 @@
 package models_test
 
 import (
-	"github.com/jumpei00/gostocktrade/app/models"
-	"github.com/jumpei00/gostocktrade/stock"
+	"github.com/oarkflow/nepse/app/models"
+	"github.com/oarkflow/nepse/stock"
 )
 
 func (suite *ModelsTestSuite) TestCreateCandles() {
@@ -49,7 +49,7 @@ func (suite *ModelsTestSuite) TestMatchTime() {
 	suite.Equal(lastCandle.ID, lastMatch)
 	suite.Nil(err2)
 
-	wrongMatch, err := models.MatchTime(firstCandle.Time+1)
+	wrongMatch, err := models.MatchTime(firstCandle.Time + 1)
 
 	suite.Equal(0, wrongMatch)
 	suite.NotNil(err)

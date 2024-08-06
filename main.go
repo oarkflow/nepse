@@ -1,12 +1,12 @@
 package main
 
 import (
-	"github.com/jumpei00/gostocktrade/app/models"
-	"github.com/jumpei00/gostocktrade/app/server"
-	"github.com/jumpei00/gostocktrade/config"
-	"github.com/jumpei00/gostocktrade/log"
-	"github.com/jumpei00/gostocktrade/nepse"
-	"github.com/jumpei00/gostocktrade/scrape"
+	"github.com/oarkflow/nepse/app/models"
+	"github.com/oarkflow/nepse/app/server"
+	"github.com/oarkflow/nepse/config"
+	"github.com/oarkflow/nepse/log"
+	"github.com/oarkflow/nepse/nepse"
+	"github.com/oarkflow/nepse/scrape"
 )
 
 func main() {

@@ -1,8 +1,8 @@
 package models_test
 
 import (
-	"github.com/jumpei00/gostocktrade/app/models"
-	"github.com/jumpei00/gostocktrade/app/models/indicator"
+	"github.com/oarkflow/nepse/app/models"
+	"github.com/oarkflow/nepse/app/models/indicator"
 )
 
 func (suite *ModelsTestSuite) TestGetTradeState() {

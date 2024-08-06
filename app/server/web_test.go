@@ -8,12 +8,12 @@ import (
 	"os"
 	"testing"
 
-	"github.com/jumpei00/gostocktrade/app/server"
+	"github.com/oarkflow/nepse/app/server"
 	"github.com/sirupsen/logrus"
 
-	"github.com/jumpei00/gostocktrade/app/models"
-	"github.com/jumpei00/gostocktrade/app/models/indicator"
-	"github.com/jumpei00/gostocktrade/stock"
+	"github.com/oarkflow/nepse/app/models"
+	"github.com/oarkflow/nepse/app/models/indicator"
+	"github.com/oarkflow/nepse/stock"
 	"github.com/stretchr/testify/suite"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"

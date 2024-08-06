@@ -1,7 +1,7 @@
 package models_test
 
 import (
-	"github.com/jumpei00/gostocktrade/app/models"
+	"github.com/oarkflow/nepse/app/models"
 )
 
 func (suite *ModelsTestSuite) TestCreateBacktestResult() {

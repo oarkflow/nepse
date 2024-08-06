@@ -13,7 +13,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/jumpei00/gostocktrade/nepse/csv"
+	"github.com/oarkflow/nepse/nepse/csv"
 )
 
 func InitCSVStock() {

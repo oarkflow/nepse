@@ -3,7 +3,7 @@ package stock_test
 import (
 	"testing"
 
-	"github.com/jumpei00/gostocktrade/stock"
+	"github.com/oarkflow/nepse/stock"
 	"github.com/stretchr/testify/assert"
 )
 

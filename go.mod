@@ -1,4 +1,4 @@
-module github.com/jumpei00/gostocktrade
+module github.com/oarkflow/nepse
 
 go 1.22.3
 

@@ -1,8 +1,8 @@
 package models
 
 import (
-	"github.com/jumpei00/gostocktrade/app/models/indicator"
-	"github.com/jumpei00/gostocktrade/config"
+	"github.com/oarkflow/nepse/app/models/indicator"
+	"github.com/oarkflow/nepse/config"
 	"github.com/sirupsen/logrus"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"

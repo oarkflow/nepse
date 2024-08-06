@@ -5,7 +5,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/jumpei00/gostocktrade/app/models/indicator"
+	"github.com/oarkflow/nepse/app/models/indicator"
 )
 
 // Trade represents whether today is "buy" or "sell" or "no trade"

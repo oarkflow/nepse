@@ -18,7 +18,7 @@ import (
 	"github.com/oarkflow/pkg/expr"
 	"github.com/oarkflow/xid"
 
-	"github.com/jumpei00/gostocktrade/nepse/csv/csvtool"
+	"github.com/oarkflow/nepse/nepse/csv/csvtool"
 )
 
 type Query struct {
