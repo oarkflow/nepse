@@ -1,4 +1,4 @@
-package main
+package nepse
 
 import (
 	"fmt"
@@ -13,6 +13,7 @@ import (
 
 	"github.com/oarkflow/convert"
 	"github.com/oarkflow/errors"
+	"github.com/oarkflow/log"
 	"github.com/oarkflow/search"
 
 	"github.com/jumpei00/gostocktrade/nepse/csv"
@@ -24,7 +25,9 @@ func InitCSVStock() {
 		panic(err)
 	}
 	engine, err := search.SetEngine[map[string]any]("stock", &search.Config{})
+	log.Info().Msg("Indexing stock")
 	engine.InsertWithPool(files, runtime.NumCPU(), 1000)
+	log.Info().Msg("Indexed stock")
 }
 
 type StockData struct {

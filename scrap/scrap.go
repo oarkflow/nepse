@@ -1,4 +1,4 @@
-package main
+package scrap
 
 import (
 	"encoding/csv"
@@ -11,6 +11,7 @@ import (
 
 	"github.com/gocolly/colly/v2"
 	"github.com/oarkflow/anonymizer"
+	"github.com/oarkflow/search"
 )
 
 var headerMapping = map[string]string{
@@ -142,21 +143,34 @@ func RenameHeaders(inputFile, outputFile string, headerMapping map[string]string
 	return nil
 }
 
-func ma1in() {
-	err := renameDir("./data/date2", "<year>_<month>_<date>.csv", "<year>-<month>-<date>.csv")
+func Scrape() error {
+	engine, err := search.GetEngine[map[string]any]("stock")
 	if err != nil {
-		panic(err)
+		return err
 	}
-	// Define the old and new header mappings
-	/*err := renameCSVFileHeaders("./data", headerMapping)
+	now := time.Now()
+	result, err := engine.Search(&search.Params{Query: now.Format(time.DateOnly), Properties: []string{"Date"}})
 	if err != nil {
-		panic(err)
-	}*/
-	err = parseDate(time.Now())
-	if err != nil {
-		panic(err)
+		return err
 	}
+	if result.Count == 0 {
+		err = parseDate(now)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
+
+/*err := renameDir("./data/date2", "<year>_<month>_<date>.csv", "<year>-<month>-<date>.csv")
+if err != nil {
+	panic(err)
+}*/
+// Define the old and new header mappings
+/*err := renameCSVFileHeaders("./data", headerMapping)
+if err != nil {
+	panic(err)
+}*/
 
 func parseDate(date time.Time) error {
 	dateStr := date.Format("01/02/2006")
