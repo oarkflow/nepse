@@ -1,41 +1,33 @@
 package techan
 
-// IncreaseRule is satisfied when the given Indicator has increasing values from index-window+1 to index.
-func NewIncreaseRule(indicator Indicator, window int) Rule {
-	return orderedRule{
-		indicator:  indicator,
-		window:     window,
-		isIncrease: true,
-	}
+// IncreaseRule is satisfied when the given Indicator at the given index is greater than the value at the previous
+// index.
+type IncreaseRule struct {
+	Indicator
 }
 
-// IncreaseRule is satisfied when the given Indicator has descreaing values from index-window+1 to index.
-func NewDecreaseRule(indicator Indicator, window int) Rule {
-	return orderedRule{
-		indicator:  indicator,
-		window:     window,
-		isIncrease: false,
-	}
-}
-
-type orderedRule struct {
-	indicator  Indicator
-	window     int
-	isIncrease bool
-}
-
-func (or orderedRule) IsSatisfied(index int, record *TradingRecord) bool {
-	if index < or.window-1 {
+// IsSatisfied returns true when the given Indicator at the given index is greater than the value at the previous
+// index.
+func (ir IncreaseRule) IsSatisfied(index int) bool {
+	if index == 0 {
 		return false
 	}
 
-	for i := index - or.window + 1; i < index; i++ {
-		current := or.indicator.Calculate(i)
-		next := or.indicator.Calculate(i + 1)
-		if or.isIncrease && current.GTE(next) || !or.isIncrease && current.LTE(next) {
-			return false
-		}
+	return ir.Calculate(index).GT(ir.Calculate(index - 1))
+}
+
+// DecreaseRule is satisfied when the given Indicator at the given index is less than the value at the previous
+// index.
+type DecreaseRule struct {
+	Indicator
+}
+
+// IsSatisfied returns true when the given Indicator at the given index is less than the value at the previous
+// index.
+func (dr DecreaseRule) IsSatisfied(index int) bool {
+	if index == 0 {
+		return false
 	}
 
-	return true
+	return dr.Calculate(index).LT(dr.Calculate(index - 1))
 }

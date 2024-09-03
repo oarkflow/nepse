@@ -24,10 +24,7 @@ type Order struct {
 	ExecutionTime time.Time
 }
 
-// OrderPlan defines how to construct an Order object during execution of a Strategy.
-// The `PercentEquity` field should be between 0.00 and 100.00, corresponding to the
-// percent of the overall portfolio allocated to a given position.
-type OrderPlan struct {
-	Side          OrderSide
-	PercentEquity big.Decimal
+// Return the total cost to execute the order.
+func (o *Order) CostBasis() big.Decimal {
+	return o.Amount.Mul(o.Price)
 }

@@ -35,11 +35,6 @@ func returnIfCached(indicator cachedIndicator, index int, firstValueFallback fun
 	} else if index < indicator.windowSize()-1 {
 		return &big.ZERO
 	} else if val := indicator.cache()[index]; val != nil {
-		firstNoValIndex := firstNoValCacheIndex(indicator.cache())
-		//don't return cache in window
-		if index > firstNoValIndex-1 {
-			return nil
-		}
 		return val
 	} else if index == indicator.windowSize()-1 {
 		value := firstValueFallback(index)
@@ -48,14 +43,4 @@ func returnIfCached(indicator cachedIndicator, index int, firstValueFallback fun
 	}
 
 	return nil
-}
-
-func firstNoValCacheIndex(r resultCache) int {
-	l := len(r)
-	for index := l - 1; index >= 0; index-- {
-		if r[index] != nil {
-			return index
-		}
-	}
-	return 0
 }

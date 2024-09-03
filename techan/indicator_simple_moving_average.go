@@ -13,10 +13,6 @@ func NewSimpleMovingAverage(indicator Indicator, window int) Indicator {
 	return smaIndicator{indicator, window}
 }
 
-func NewSMAIndicator(indicator Indicator, window int) Indicator {
-	return smaIndicator{indicator, window}
-}
-
 func (sma smaIndicator) Calculate(index int) big.Decimal {
 	if index < sma.window-1 {
 		return big.ZERO

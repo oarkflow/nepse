@@ -1,78 +1,109 @@
 package techan
 
-import "github.com/oarkflow/nepse/big"
+import (
+	"fmt"
 
-// Position is a pair of two Order objects
+	"github.com/oarkflow/nepse/big"
+)
+
+// Positions holds iformation about an open position
 type Position struct {
-	orders [2]*Order
+	Security      string
+	Side          OrderSide
+	Amount        big.Decimal
+	AvgEntryPrice big.Decimal
+	Price         big.Decimal
+}
+
+// Snapshot of position used to document account history
+type PositionSnapshot struct {
+	Security       string
+	Side           OrderSide
+	Amount         big.Decimal
+	Price          big.Decimal
+	UnrealizedGain big.Decimal
 }
 
 // NewPosition returns a new Position with the passed-in order as the open order
-func NewPosition(openOrder Order) (t *Position) {
-	t = new(Position)
-	t.orders[0] = &openOrder
+func NewPosition(order *Order) *Position {
+	pos := new(Position)
+	pos.Security = order.Security
+	pos.Side = order.Side
+	pos.Amount = order.Amount
+	pos.AvgEntryPrice = order.Price
+	pos.Price = order.Price
 
-	return t
+	return pos
 }
 
-// Enter sets the open order to the order passed in
-func (p *Position) Enter(order Order) {
-	p.orders[0] = &order
+// ExecuteOrder takes a new order to apply to the position and inceases/deducts the amount from
+// the current position. If a buy order is placed, it will also recalculate the average entry
+// price for the position. In all cases, if the order results in a difference to the cash value
+// of the account placing the order a positive (for sells) or negative (for buys) big.Decimal is
+// returned to denote how the account's cash should be modified.
+//
+// This function will also update the price of the position to that of the order. Prices can
+// always be synced outside of this function using UpdatePrice.
+//
+// Only long positions are supported currently.
+func (p *Position) ExecuteOrder(order *Order) error {
+	if (p.Side == BUY) && (order.Side == BUY) {
+		newTotalValue := p.AvgEntryPrice.Mul(p.Amount).Add(order.Price.Mul(order.Amount))
+		newAmount := p.Amount.Add(order.Amount)
+
+		p.AvgEntryPrice = newTotalValue.Div(newAmount)
+		p.Amount = newAmount
+		p.Price = order.Price
+
+		return nil
+	} else if (p.Side == BUY) && (order.Side == SELL) {
+		intermediate := p.Amount.Sub(order.Amount)
+		if intermediate.LT(big.ZERO) {
+			return fmt.Errorf(
+				"invalid long sell on position: %v. tried to sell %v when position has %v",
+				p.Security,
+				order.Amount.String(),
+				p.Amount.String(),
+			)
+		}
+
+		p.Amount = intermediate
+		p.Price = order.Price
+
+		return nil
+	} else {
+		return fmt.Errorf("unsupported order operation %v on %v position", order.Side, p.Side)
+	}
 }
 
-// Exit sets the exit order to the order passed in
-func (p *Position) Exit(order Order) {
-	p.orders[1] = &order
-}
-
-// IsLong returns true if the entrance order is a buy order
-func (p *Position) IsLong() bool {
-	return p.EntranceOrder() != nil && p.EntranceOrder().Side == BUY
-}
-
-// IsShort returns true if the entrance order is a sell order
-func (p *Position) IsShort() bool {
-	return p.EntranceOrder() != nil && p.EntranceOrder().Side == SELL
-}
-
-// IsOpen returns true if there is an entrance order but no exit order
-func (p *Position) IsOpen() bool {
-	return p.EntranceOrder() != nil && p.ExitOrder() == nil
-}
-
-// IsClosed returns true of there are both entrance and exit orders
+// Returns if the position is closed, meaning there is currently a zero amount.
 func (p *Position) IsClosed() bool {
-	return p.EntranceOrder() != nil && p.ExitOrder() != nil
+	return p.Amount.EQ(big.ZERO)
 }
 
-// IsNew returns true if there is neither an entrance or exit order
-func (p *Position) IsNew() bool {
-	return p.EntranceOrder() == nil && p.ExitOrder() == nil
+// Update the current price to reflect realtime values and to calculate unrealized gains/equity
+func (p *Position) UpdatePrice(newPrice big.Decimal) {
+	p.Price = newPrice
 }
 
-// EntranceOrder returns the entrance order of this position
-func (p *Position) EntranceOrder() *Order {
-	return p.orders[0]
+// Calculate the unrealized equity of an open position
+func (p *Position) UnrealizedEquity() big.Decimal {
+	return p.Amount.Mul(p.Price)
 }
 
-// ExitOrder returns the exit order of this position
-func (p *Position) ExitOrder() *Order {
-	return p.orders[1]
+// Computes the unrealized gain since the posiion was entered.
+func (p *Position) UnrealizedGain() big.Decimal {
+	return p.Amount.Mul(p.Price).Sub(p.Amount.Mul(p.AvgEntryPrice))
 }
 
-// CostBasis returns the price to enter this order
-func (p *Position) CostBasis() big.Decimal {
-	if p.EntranceOrder() != nil {
-		return p.EntranceOrder().Amount.Mul(p.EntranceOrder().Price)
-	}
-	return big.ZERO
-}
+// export a snapshot of this position at the current state.
+func (p *Position) ExportSnapshot() *PositionSnapshot {
+	snapshot := new(PositionSnapshot)
+	snapshot.Amount = p.Amount
+	snapshot.Price = p.Price
+	snapshot.Security = p.Security
+	snapshot.UnrealizedGain = p.UnrealizedGain()
+	snapshot.Side = p.Side
 
-// ExitValue returns the value accrued by closing the position
-func (p *Position) ExitValue() big.Decimal {
-	if p.IsClosed() {
-		return p.ExitOrder().Amount.Mul(p.ExitOrder().Price)
-	}
-
-	return big.ZERO
+	return snapshot
 }

@@ -6,6 +6,7 @@ require (
 	github.com/araddon/dateparse v0.0.0-20210429162001-6b43995a97de
 	github.com/gocolly/colly/v2 v2.1.0
 	github.com/google/btree v1.1.2
+	github.com/klauspost/compress v1.17.9
 	github.com/markcheno/go-quote v0.0.0-20240225224950-d942c652292c
 	github.com/markcheno/go-talib v0.0.0-20190307022042-cd53a9264d70
 	github.com/oarkflow/anonymizer v0.0.8
@@ -38,7 +39,6 @@ require (
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/kennygrant/sanitize v1.2.4 // indirect
-	github.com/klauspost/compress v1.17.9 // indirect
 	github.com/kr/pretty v0.3.0 // indirect
 	github.com/mattn/go-sqlite3 v1.14.22 // indirect
 	github.com/oarkflow/convert v0.0.1 // indirect

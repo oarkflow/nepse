@@ -2,27 +2,44 @@ package techan
 
 import "github.com/oarkflow/nepse/big"
 
-// NewMaximumDrawdownIndicator returns a derivative Indicator which returns the maximum
-// drawdown of the underlying indicator over a window. Maximum drawdown is defined as the
-// maximum observed loss from peak of an underlying indicator in a given timeframe.
-// Maximum drawdown is given as a percentage of the peak. Use a window value of -1 to include
-// all values present in the underlying indicator.
-// See: https://www.investopedia.com/terms/m/maximum-drawdown-mdd.asp
-func NewMaximumDrawdownIndicator(ind Indicator, window int) Indicator {
-	return maximumDrawdownIndicator{
-		indicator: ind,
-		window:    window,
-	}
+type maximumDrawdownIndicator struct {
+	drawdowns []big.Decimal
 }
 
-type maximumDrawdownIndicator struct {
-	indicator Indicator
-	window    int
+// Revamped maximum drawdown indicator which uses a local extrema calculation
+// to find the difference between almost absolute peaks and valleys over time.
+//
+// Each "peak" and "valley" are paired to introduce a single "drawdown"
+func NewMaximumDrawdownIndicator(indicator Indicator, window int, length int) Indicator {
+	extrema := NewLocalExtremaIndicator(indicator, window, length)
+
+	drawdowns := []big.Decimal{}
+	maxDrawdown := big.ZERO
+	lastPeak := big.ZERO
+	inDrawdown := false
+
+	for i := 0; i < length; i++ {
+		isExtrema := extrema.Calculate(i)
+
+		if isExtrema.GT(big.ZERO) {
+			lastPeak = indicator.Calculate(i)
+			inDrawdown = true
+		} else if isExtrema.LT(big.ZERO) && inDrawdown {
+			drawdown := lastPeak.Sub(indicator.Calculate(i))
+
+			if drawdown.GT(maxDrawdown) {
+				maxDrawdown = drawdown
+			}
+
+			inDrawdown = false
+		}
+
+		drawdowns = append(drawdowns, maxDrawdown)
+	}
+
+	return maximumDrawdownIndicator{drawdowns: drawdowns}
 }
 
 func (mdi maximumDrawdownIndicator) Calculate(index int) big.Decimal {
-	minVal := NewMinimumValueIndicator(mdi.indicator, mdi.window).Calculate(index)
-	maxVal := NewMaximumValueIndicator(mdi.indicator, mdi.window).Calculate(index)
-
-	return (minVal.Sub(maxVal)).Div(maxVal)
+	return mdi.drawdowns[index]
 }
