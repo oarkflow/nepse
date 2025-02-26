@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Endpoints</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 5px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        #endpoint-list {
+            list-style-type: none;
+            padding: 0;
+            display: flex;
+            flex-wrap: wrap; /* Allows the items to wrap to the next line */
+            gap: 10px;
+        }
+        .endpoint-item {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            flex: 1 1 calc(20% - 10px); /* Adjust the width to fit 4 items per row */
+            box-sizing: border-box; /* Ensures padding and border are included in the element's total width and height */
+            background-color: #fff; /* Optional: Adds a background color for visibility */
+        }
+        .endpoint-item a {
+            text-decoration: none;
+            color: #007BFF;
+            font-weight: bold;
+        }
+        .form-container {
+            margin-top: 10px;
+        }
+        input[type="number"], input[type="text"], input[type="date"], select {
+            margin: 5px;
+            padding: 5px;
+            width: 150px;
+        }
+        button {
+            padding: 5px 15px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .autocomplete-suggestions {
+            max-height: 150px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            background-color: white;
+            position: absolute;
+            width: 180px;
+            z-index: 1000;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<h1>API Endpoints</h1>
+
+<div>
+    <form>
+        <div class="form-container">
+            <input type="text" name="company_name" class="company-input" placeholder="Start typing company name, symbol or ID..." oninput="autocompleteCompany(event)">
+            <input type="hidden" name="company_id" id="company_id" class="company-id">
+            <input type="number" name="size" id="size" value="500" placeholder="size">
+            <input type="date" name="date" id="date" class="date-field">
+            <input type="date" name="start_date" id="start_date" placeholder="start_date" class="date-field">
+            <input type="date" name="end_date" id="end_date" placeholder="end_date" class="date-field">
+        </div>
+    </form>
+    <div class="autocomplete-suggestions"></div>
+</div>
+<ul id="endpoint-list"></ul>
+</body>
+<script>
+    const companies = [{"companyName":"Nabil Bank Limited","id":131,"symbol":"NABIL"},{"companyName":"Nepal Investment Mega Bank Limited","id":132,"symbol":"NIMB"},{"companyName":"Standard Chartered Bank  Nepal Limited","id":133,"symbol":"SCB"},{"companyName":"Himalayan Bank Limited","id":134,"symbol":"HBL"},{"companyName":"Nepal SBI Bank Limited","id":135,"symbol":"SBI"},{"companyName":"Everest Bank Limited","id":137,"symbol":"EBL"},{"companyName":"NIC Asia Bank Ltd.","id":139,"symbol":"NICA"},{"companyName":"Machhapuchhre Bank Limited","id":140,"symbol":"MBL"},{"companyName":"Laxmi Sunrise Bank Limited","id":141,"symbol":"LSL"},{"companyName":"Kumari Bank Limited","id":142,"symbol":"KBL"},{"companyName":"Siddhartha Bank Limited","id":145,"symbol":"SBL"},{"companyName":"Soaltee Hotel Limited","id":147,"symbol":"SHL"},{"companyName":"Taragaon Regency Hotel Limited","id":148,"symbol":"TRH"},{"companyName":"Oriental Hotels Limited","id":149,"symbol":"OHL"},{"companyName":"National Hydro Power Company Limited","id":152,"symbol":"NHPC"},{"companyName":"Butwal Power Company Limited","id":153,"symbol":"BPCL"},{"companyName":"Chilime Hydropower Company Limited","id":154,"symbol":"CHCL"},{"companyName":"Salt Trading Corporation","id":155,"symbol":"STC"},{"companyName":"Bishal Bazar Company Limited","id":156,"symbol":"BBC"},{"companyName":"Nirdhan Utthan Laghubitta Bittiya Sanstha Limited","id":163,"symbol":"NUBL"},{"companyName":"Chhimek Laghubitta Bittiya Sanstha Limited","id":164,"symbol":"CBBL"},{"companyName":"Deprosc Laghubitta Bittiya Sanstha Limited","id":166,"symbol":"DDBL"},{"companyName":"Sanima Bank Limited","id":171,"symbol":"SANIMA"},{"companyName":"Narayani Development Bank Limited","id":172,"symbol":"NABBC"},{"companyName":"Nepal Insurance Co. Ltd.","id":176,"symbol":"NICL"},{"companyName":"Rastriya Beema Company Limited","id":177,"symbol":"RBCL"},{"companyName":"National Life Insurance Co. Ltd.","id":178,"symbol":"NLICL"},{"companyName":"Himalayan Everest Insurance Limited","id":179,"symbol":"HEI"},{"companyName":"United Ajod Insurance Limited","id":180,"symbol":"UAIL"},{"companyName":"Siddhartha Premier Insurance Limited","id":182,"symbol":"SPIL"},{"companyName":"Neco Insurance Limited","id":183,"symbol":"NIL"},{"companyName":"Prabhu Insurance Ltd.","id":184,"symbol":"PRIN"},{"companyName":"Sagarmatha Lumbini Insurance Co. Limited","id":185,"symbol":"SALICO"},{"companyName":"IGI Prudential Insurance Limited","id":186,"symbol":"IGI"},{"companyName":"Nepal Life Insurance Co. Ltd.","id":187,"symbol":"NLIC"},{"companyName":"Life Insurance Corporation (Nepal) Limited","id":188,"symbol":"LICN"},{"companyName":"Shikhar Insurance Co. Ltd.","id":192,"symbol":"SICL"},{"companyName":"Nepal Finance Ltd.","id":194,"symbol":"NFS"},{"companyName":"Bottlers Nepal (Balaju) Limited","id":195,"symbol":"BNL"},{"companyName":"Nepal Lube Oil Limited","id":198,"symbol":"NLO"},{"companyName":"Gurkhas Finance Ltd.","id":204,"symbol":"GUFL"},{"companyName":"Citizen Investment Trust","id":210,"symbol":"CIT"},{"companyName":"Bottlers Nepal (Terai) Limited","id":213,"symbol":"BNT"},{"companyName":"Unilever Nepal Limited","id":219,"symbol":"UNL"},{"companyName":"Best Finance Company Ltd.","id":227,"symbol":"BFC"},{"companyName":"Goodwill Finance Limited","id":232,"symbol":"GFCL"},{"companyName":"Himalayan Distillery Limited","id":235,"symbol":"HDL"},{"companyName":"Pokhara Finance Ltd.","id":236,"symbol":"PFL"},{"companyName":"NMB Bank Limited","id":238,"symbol":"NMB"},{"companyName":"Shree Investment Finance Co. Ltd.","id":244,"symbol":"SIFC"},{"companyName":"Central Finance Co. Ltd.","id":245,"symbol":"CFCL"},{"companyName":"Janaki Finance Company Limited","id":250,"symbol":"JFL"},{"companyName":"Prabhu  Bank Limited","id":255,"symbol":"PRVU"},{"companyName":"Samriddhi Finance Company Limited","id":256,"symbol":"SFCL"},{"companyName":"Guheswori Merchant Banking \u0026 Finance Ltd.","id":263,"symbol":"GMFIL"},{"companyName":"Swabalamban Laghubitta Bittiya Sanstha Limited","id":268,"symbol":"SWBBL"},{"companyName":"ICFC Finance Limited","id":273,"symbol":"ICFC"},{"companyName":"Excel Development Bank Ltd.","id":274,"symbol":"EDBL"},{"companyName":"Nepal Doorsanchar Company Limited","id":307,"symbol":"NTC"},{"companyName":"Progressive Finance Limited","id":338,"symbol":"PROFL"},{"companyName":"Global IME Bank Limited","id":341,"symbol":"GBIME"},{"companyName":"Citizens Bank International Limited","id":348,"symbol":"CZBIL"},{"companyName":"Prime Commercial Bank Ltd.","id":357,"symbol":"PCBL"},{"companyName":"Lumbini Bikas Bank Ltd.","id":358,"symbol":"LBBL"},{"companyName":"Arun Valley Hydropower Development Co. Ltd.","id":360,"symbol":"AHPC"},{"companyName":"Miteri Development Bank Limited","id":371,"symbol":"MDB"},{"companyName":"Asian Life Insurance Co Limited","id":385,"symbol":"ALICL"},{"companyName":"Himalayan Life Insurance Limited","id":393,"symbol":"HLI"},{"companyName":"Nerude Mirmire Laghubitta Bittiya Sanstha Limited","id":396,"symbol":"NMLBBL"},{"companyName":"Agricultural Development Bank Limited","id":397,"symbol":"ADBL"},{"companyName":"Mahalaxmi Bikas Bank Ltd.","id":401,"symbol":"MLBL"},{"companyName":"SuryaJyoti Life Insurance Company Limited","id":403,"symbol":"SJLIC"},{"companyName":"Garima Bikas Bank Limited","id":417,"symbol":"GBBL"},{"companyName":"Jyoti Bikas Bank Limited","id":418,"symbol":"JBBL"},{"companyName":"Karnali Development Bank Limited","id":428,"symbol":"KRBL"},{"companyName":"Corporate Development Bank Limited","id":450,"symbol":"CORBL"},{"companyName":"Kamana Sewa Bikas Bank Limited","id":459,"symbol":"KSBBL"},{"companyName":"Multipurpose Finance Company  Limited","id":471,"symbol":"MPFL"},{"companyName":"SHANGRI-LA DEVELOPMENT BANK LIMITED","id":472,"symbol":"SADBL"},{"companyName":"SHINE RESUNGA DEVELOPMENT BANK LTD","id":473,"symbol":"SHINE"},{"companyName":"Muktinath Bikas Bank Ltd.","id":474,"symbol":"MNBBL"},{"companyName":"First Micro Finance Laghubitta Bittiya Sanstha Limited","id":490,"symbol":"FMDBL"},{"companyName":"Manjushree Finance Ltd.","id":516,"symbol":"MFIL"},{"companyName":"Nepal Bank Limited","id":517,"symbol":"NBL"},{"companyName":"Swarojgar Laghubitta Bittiya Sanstha Ltd.","id":545,"symbol":"SLBBL"},{"companyName":"NLG Insurance Company Ltd.","id":559,"symbol":"NLG"},{"companyName":"Sindhu Bikash Bank Ltd","id":561,"symbol":"SINDU"},{"companyName":"Sana Kisan Bikas Laghubitta Bittiya Sanstha Limited","id":574,"symbol":"SKBBL"},{"companyName":"Grameen Bikas Laghubitta Bittiya Sanstha Ltd.","id":583,"symbol":"GBLBS"},{"companyName":"Reliance Finance Ltd.","id":587,"symbol":"RLFL"},{"companyName":"Sanima Mai Hydropower Limited","id":591,"symbol":"SHPC"},{"companyName":"Kalika Laghubitta Bittiya Sanstha Ltd","id":593,"symbol":"KMCDB"},{"companyName":"Mithila LaghuBitta Bittiya Sanstha Limited","id":601,"symbol":"MLBBL"},{"companyName":"Ridi Power Company Limited","id":610,"symbol":"RIDI"},{"companyName":"Laxmi Laghubitta Bittiya Sanstha Ltd.","id":618,"symbol":"LLBS"},{"companyName":"Barun Hydropower Co. Ltd.","id":686,"symbol":"BARUN"},{"companyName":"Vijaya laghubitta Bittiya Sanstha Ltd.","id":687,"symbol":"VLBS"},{"companyName":"Himalayan Laghubitta Bittiya Sanstha Limited","id":693,"symbol":"HLBSL"},{"companyName":"Matribhumi Lagubitta Bittiya Sanstha Limited","id":694,"symbol":"MATRI"},{"companyName":"Janautthan Samudayic Laghubitta Bittya Sanstha Limited","id":695,"symbol":"JSLBB"},{"companyName":"API POWER COMPANY LIMITED","id":697,"symbol":"API"},{"companyName":"NMB  Microfinance Bittiya Sanstha Ltd.","id":704,"symbol":"NMBMF"},{"companyName":"Global IME Laghubitta Bittiya Sanstha Ltd.","id":705,"symbol":"GILB"},{"companyName":"Suryodaya Womi Laghubitta Bittiya Sanstha Limited","id":706,"symbol":"SWMF"},{"companyName":"Mero Microfinance Bittiya Sanstha Ltd.","id":1741,"symbol":"MERO"},{"companyName":"Hydorelectricity Investment and Development Company Ltd","id":2742,"symbol":"HIDCL"},{"companyName":"Ngadi Group Power Ltd.","id":2743,"symbol":"NGPL"},{"companyName":"Green Development Bank Ltd.","id":2744,"symbol":"GRDBL"},{"companyName":"National  Laghubitta Bittiya Sanstha Limited","id":2746,"symbol":"NMFBS"},{"companyName":"RSDC Laghubitta Bittiya Sanstha Ltd.","id":2748,"symbol":"RSDC"},{"companyName":"Khanikhola Hydropower Co. Ltd.","id":2751,"symbol":"KKHC"},{"companyName":"Dibyashwori Hydropower Ltd.","id":2754,"symbol":"DHPL"},{"companyName":"Arun Kabeli Power Ltd.","id":2757,"symbol":"AKPL"},{"companyName":"Forward Microfinance Laghubitta Bittiya Sanstha Limited","id":2758,"symbol":"FOWAD"},{"companyName":"Synergy Power Development Ltd.","id":2759,"symbol":"SPDL"},{"companyName":"United Modi Hydropower Ltd.","id":2760,"symbol":"UMHL"},{"companyName":"Samata Gharelu Laghubitta Bittiya Sanstha Limited","id":2761,"symbol":"SMATA"},{"companyName":"Chhyangdi Hydropower Ltd.","id":2766,"symbol":"CHL"},{"companyName":"Himalayan Power Partner Ltd.","id":2767,"symbol":"HPPL"},{"companyName":"Mahuli Laghubitta Bittiya Sanstha Limited","id":2768,"symbol":"MSLB"},{"companyName":"Nepal Hydro Developers Ltd","id":2769,"symbol":"NHDL"},{"companyName":"Siddhartha Bank Limited","id":2770,"symbol":"SEF"},{"companyName":"Support Lagubitta Bittiya Sanstha Limited","id":2771,"symbol":"SMB"},{"companyName":"Sanima Bank Limited","id":2773,"symbol":"SAEF"},{"companyName":"Unnati Sahakarya Laghubitta Bittiya Sanstha Limited","id":2774,"symbol":"USLB"},{"companyName":"Radhi Bidyut Company Ltd","id":2776,"symbol":"RADHI"},{"companyName":"NIC Asia Bank Ltd.","id":2779,"symbol":"NICGF"},{"companyName":"Citizens Bank International Limited","id":2780,"symbol":"CMF1"},{"companyName":"Wean Nepal Laghubitta Bittiya Sanstha Limited","id":2781,"symbol":"WNLB"},{"companyName":"Nadep Laghubittiya bittya Sanstha Ltd.","id":2784,"symbol":"NADEP"},{"companyName":"Panchakanya Mai Hydropower Ltd","id":2786,"symbol":"PMHPL"},{"companyName":"Kalika power Company Ltd","id":2787,"symbol":"KPCL"},{"companyName":"Ankhu Khola Jalvidhyut Company Limited","id":2788,"symbol":"AKJCL"},{"companyName":"Joshi Hydropower Development Company Ltd","id":2789,"symbol":"JOSHI"},{"companyName":"Aarambha Chautari Laghubitta Bittya Sanstha Limited","id":2790,"symbol":"ACLBSL"},{"companyName":"Upper Tamakoshi Hydropower Ltd","id":2792,"symbol":"UPPER"},{"companyName":"Samudayik Laghubitta Bittiya Sanstha Limited","id":2804,"symbol":"SLBSL"},{"companyName":"Ghalemdi Hydro Limited","id":2806,"symbol":"GHL"},{"companyName":"Asha Laghubitta Bittiya Sanstha Ltd.","id":2807,"symbol":"ALBSL"},{"companyName":"Shivam Cements Limited","id":2809,"symbol":"SHIVM"},{"companyName":"Universal Power Company Limited","id":2810,"symbol":"UPCL"},{"companyName":"Mountain Hydro Nepal Limited","id":2811,"symbol":"MHNL"},{"companyName":"Panchthar Power Company Ltd","id":2813,"symbol":"PPCL"},{"companyName":"Ganapati Laghubitta Bittiya Sanstha Ltd","id":2815,"symbol":"GMFBS"},{"companyName":"Himalaya Urja Bikas Company Limited","id":2824,"symbol":"HURJA"},{"companyName":"NIC Asia Bank Ltd.","id":2825,"symbol":"NICAD85/86"},{"companyName":"Gurans Laghubitta Bittiya Sanstha Ltd","id":2826,"symbol":"GLBSL"},{"companyName":"Sanima Bank Limited","id":2828,"symbol":"SAND2085"},{"companyName":"Swabhumaan Laghubitta Bittiya Sanstha Ltd","id":2829,"symbol":"SMFBS"},{"companyName":"Union Hydropower Limited","id":2831,"symbol":"UNHPL"},{"companyName":"Infinity Laghubitta Bittiya Sastha Ltd","id":2832,"symbol":"ILBS"},{"companyName":"Nabil Bank Limited","id":2835,"symbol":"NBF2"},{"companyName":"Rasuwagadhi Hydropower Company Limited","id":2841,"symbol":"RHPL"},{"companyName":"SANJEN JALAVIDHYUT COMPANY LTD","id":2842,"symbol":"SJCL"},{"companyName":"NMB Bank Limited","id":2850,"symbol":"NMBD2085"},{"companyName":"Nepal Investment Mega Bank Limited","id":2851,"symbol":"NIBD2082"},{"companyName":"Nepal Bangladesh Bank Limited","id":2854,"symbol":"NBBD2085"},{"companyName":"Siddhartha Bank Limited","id":2859,"symbol":"SIGS2"},{"companyName":"Saptakoshi Development bank Ltd","id":2860,"symbol":"SAPDBL"},{"companyName":"CBIL Capital Limited","id":2862,"symbol":"CMF2"},{"companyName":"NIC ASIA Capital Ltd","id":2863,"symbol":"NICBF"},{"companyName":"Siddhartha Bank Limited","id":2864,"symbol":"SBLD83"},{"companyName":"Machhapuchhre Bank Limited","id":2866,"symbol":"MBLD2085"},{"companyName":"NMB Capital Ltd.","id":2867,"symbol":"NMB50"},{"companyName":"NIC Asia Bank Ltd.","id":2868,"symbol":"NICD83/84"},{"companyName":"NIC Asia Bank Ltd.","id":2869,"symbol":"NICAD8283"},{"companyName":"Siddhartha Bank Limited","id":2872,"symbol":"SBLD2082"},{"companyName":"Himalayan Bank Limited","id":2873,"symbol":"HBLD83"},{"companyName":"Prabhu  Bank Limited","id":2875,"symbol":"PBLD86"},{"companyName":"Laxmi Sunrise Bank Limited","id":2877,"symbol":"SFMF"},{"companyName":"Sunrise Bank Limited","id":2878,"symbol":"SRBLD83"},{"companyName":"Laxmi Sunrise Bank Limited","id":2879,"symbol":"LBLD86"},{"companyName":"Himal Dolakha Hydropower Com. Ltd.","id":2880,"symbol":"HDHPC"},{"companyName":"Nepal Reinsurance Company Limited","id":2881,"symbol":"NRIC"},{"companyName":"ICFC Finance Limited","id":2882,"symbol":"ICFCD83"},{"companyName":"Goodwill Finance Limited","id":2883,"symbol":"GWFD83"},{"companyName":"Kumari Bank Limited","id":2885,"symbol":"KBLD86"},{"companyName":"Agricultural Development Bank Limited","id":2886,"symbol":"ADBLD83"},{"companyName":"NIC ASIA Laghubitta Bittiya Sanstha Limited","id":2887,"symbol":"NICLBSL"},{"companyName":"Citizens Bank International Limited","id":2889,"symbol":"CIZBD86"},{"companyName":"Nepal SBI Bank Limited","id":2890,"symbol":"SBIBD86"},{"companyName":"Nabil Bank Limited","id":2892,"symbol":"NBLD82"},{"companyName":"NIC Asia Bank Ltd.","id":2895,"symbol":"NICAD8182"},{"companyName":"Sampada Laghubitta Bittiya Sanstha Limited","id":2896,"symbol":"SMPDA"},{"companyName":"NRN Infrastructure and Development Limited","id":2898,"symbol":"NRN"},{"companyName":"Laxmi Capital Market Limited","id":2902,"symbol":"LUK"},{"companyName":"Liberty Energy Company Limited","id":2903,"symbol":"LEC"},{"companyName":"Prabhu  Bank Limited","id":2904,"symbol":"PBLD84"},{"companyName":"Shiva Shree Hydropower Limited","id":2907,"symbol":"SSHL"},{"companyName":"Sanima GIC Insurance Limited","id":2908,"symbol":"SGIC"},{"companyName":"Siddhartha Bank Limited","id":2912,"symbol":"SBLD84"},{"companyName":"Mountain Energy Nepal Limited","id":2913,"symbol":"MEN"},{"companyName":"United Idi Mardi \u0026 RB Hydropower Ltd","id":2914,"symbol":"UMRH"},{"companyName":"Prabhu Mahalaxmi Life Insurance Limited","id":2915,"symbol":"PMLI"},{"companyName":"Chandragiri Hills Limited","id":2917,"symbol":"CGH"},{"companyName":"Nepal Infrastructure Bank Limited","id":2919,"symbol":"NIFRA"},{"companyName":"Sanima Bank Limited","id":2922,"symbol":"SBD87"},{"companyName":"Sanima Bank Limited","id":2923,"symbol":"SLCF"},{"companyName":"Greenlife Hydropower Limited","id":2924,"symbol":"GLH"},{"companyName":"Mahila Laghubitta Bittiya Sanstha Ltd","id":2925,"symbol":"MLBSL"},{"companyName":"Nepal Investment Mega Bank Limited","id":2931,"symbol":"NIBD84"},{"companyName":"Manjushree Finance Ltd.","id":2932,"symbol":"MFLD85"},{"companyName":"Kumari Bank Limited","id":2933,"symbol":"KEF"},{"companyName":"Singati Hydro Energy Ltd","id":2934,"symbol":"SHEL"},{"companyName":"Ru Ru Jalbidhyut Pariyojana Limited","id":2935,"symbol":"RURU"},{"companyName":"Nepal Credit And Commercial Bank Limited","id":2936,"symbol":"NCCD86"},{"companyName":"Sunrise Bank Limited","id":2937,"symbol":"SBCF"},{"companyName":"CEDB Hydropower Development Company Limited","id":3946,"symbol":"CHDC"},{"companyName":"Prabhu  Bank Limited","id":4947,"symbol":"PSF"},{"companyName":"Kamana Sewa Bikas Bank Limited","id":4948,"symbol":"KSBBLD87"},{"companyName":"Nepal Investment Mega Bank Limited","id":4949,"symbol":"NIBSF2"},{"companyName":"Jeevan Bikas Laghubitta Bittiya Sanstha Ltd","id":4951,"symbol":"JBLB"},{"companyName":"Nepal Bank Limited","id":4959,"symbol":"NBLD87"},{"companyName":"Agricultural Development Bank Limited","id":4960,"symbol":"ADBLB"},{"companyName":"Bank of Kathmandu Ltd.","id":4961,"symbol":"BOKD86"},{"companyName":"Prabhu  Bank Limited","id":4962,"symbol":"PBLD87"},{"companyName":"NMB Bank Limited","id":4963,"symbol":"NMBD87/88"},{"companyName":"NMB Bank Limited","id":4964,"symbol":"NMBEB92/93"},{"companyName":"Samaj Laghubitta Bittiya Sanstha Ltd","id":4965,"symbol":"SAMAJ"},{"companyName":"NIC ASIA Capital Ltd","id":4967,"symbol":"NICSF"},{"companyName":"RBB Merchant Banking Limited","id":4968,"symbol":"RMF1"},{"companyName":"Muktinath Bikas Bank Ltd.","id":4969,"symbol":"MND84/85"},{"companyName":"Sanima Reliance Life Insurance Limited","id":5982,"symbol":"SRLI"},{"companyName":"Laxmi Sunrise Bank Limited","id":5984,"symbol":"LBLD88"},{"companyName":"Prime Commercial Bank Ltd.","id":6984,"symbol":"PBD85"},{"companyName":"SHANGRI-LA DEVELOPMENT BANK LIMITED","id":6985,"symbol":"SDBD87"},{"companyName":"Machhapuchhre Bank Limited","id":7985,"symbol":"MBLD87"},{"companyName":"NIC Asia Bank Ltd.","id":7986,"symbol":"NICD88"},{"companyName":"Rastriya Banijya Bank","id":8003,"symbol":"RBBD83"},{"companyName":"Global IME Bank Limited","id":8004,"symbol":"GBILD86/87"},{"companyName":"Mailung Khola Jal Vidhyut Company Limited","id":8005,"symbol":"MKJC"},{"companyName":"Manushi Laghubitta Bittiya Sanstha Limited","id":8018,"symbol":"MLBS"},{"companyName":"Jyoti Bikas Bank Limited","id":8020,"symbol":"JBBD87"},{"companyName":"Sahas Urja Limited","id":8021,"symbol":"SAHAS"},{"companyName":"Terhathum Power Company Limited","id":8022,"symbol":"TPC"},{"companyName":"Mega  Bank Nepal Ltd.","id":8023,"symbol":"MMF1"},{"companyName":"Nabil Bank Limited","id":8024,"symbol":"NBF3"},{"companyName":"Samling power company limited","id":8025,"symbol":"SPC"},{"companyName":"Nyadi hydropower limited","id":8026,"symbol":"NYADI"},{"companyName":"Nabil Bank Limited","id":8027,"symbol":"NBLD85"},{"companyName":"Agricultural Development Bank Limited","id":8029,"symbol":"ADBLB86"},{"companyName":"Agricultural Development Bank Limited","id":8030,"symbol":"ADBLB87"},{"companyName":"Madhya Bhotekoshi Jalavidyut Company Limited","id":8031,"symbol":"MBJC"},{"companyName":"Buddha bhumi nepal hydro power company limited","id":8032,"symbol":"BNHC"},{"companyName":"Garima Bikas Bank Limited","id":8033,"symbol":"GBBD85"},{"companyName":"Emerging nepal limited","id":8034,"symbol":"ENL"},{"companyName":"NESDO Sambridha Laghubitta Bittiya Sanstha Limited","id":8041,"symbol":"NESDO"},{"companyName":"Civil Bank Ltd","id":8043,"symbol":"CBLD88"},{"companyName":"Everest Bank Limited","id":8044,"symbol":"EBLD86"},{"companyName":"Green Ventures Limited","id":8045,"symbol":"GVL"},{"companyName":"Balephi Hydropower Limited","id":8055,"symbol":"BHL"},{"companyName":"Upakar Laghubitta Bittiya  Sanstha  Limited","id":8063,"symbol":"ULBSL"},{"companyName":"CYC Nepal laghubitta Bittiya Sanstha Limited","id":8065,"symbol":"CYCL"},{"companyName":"River Falls power Limited","id":8066,"symbol":"RFPL"},{"companyName":"Century Commercial Bank Ltd.","id":8068,"symbol":"CCBD88"},{"companyName":"Dordi Khola Jal Bidyut Company limited","id":8070,"symbol":"DORDI"},{"companyName":"NIC Asia Bank Ltd.","id":8073,"symbol":"NICFC"},{"companyName":"Kumari Bank Limited","id":8074,"symbol":"KDBY"},{"companyName":"Bindhyabasini Hydropower Development Company Limited","id":8075,"symbol":"BHDC"},{"companyName":"Himalayan Hydropower Limited","id":8076,"symbol":"HHL"},{"companyName":"Prime Commercial Bank Ltd.","id":8097,"symbol":"PBD88"},{"companyName":"Siddhartha Bank Limited","id":8098,"symbol":"SBLD89"},{"companyName":"Upper Hewakhola Hydropower company Limited","id":8099,"symbol":"UHEWA"},{"companyName":"Swet-Ganga Hydropower and Construction Limited","id":8100,"symbol":"SGHC"},{"companyName":"Mandakini Hydropower Limited","id":8102,"symbol":"MHL"},{"companyName":"Upper solu Electric company Limited","id":8104,"symbol":"USHEC"},{"companyName":"NMB Bank Limited","id":8105,"symbol":"NMBUR93/94"},{"companyName":"Global IME Balanced Fund-1","id":8106,"symbol":"GIBF1"},{"companyName":"Rapti Hydro and General Construction Limited","id":8108,"symbol":"RHGCL"},{"companyName":"Sanima Bank Limited","id":8109,"symbol":"SBD89"},{"companyName":"Nepal SBI Bank Limited","id":8110,"symbol":"SBID83"},{"companyName":"Prime Commercial Bank Ltd.","id":8116,"symbol":"PBD84"},{"companyName":"Aviyan laghubittya bittiya sanstha limited","id":8117,"symbol":"AVYAN"},{"companyName":"Everest Bank Limited","id":8119,"symbol":"EBLD85"},{"companyName":"Sayapatri Hydropower Limited","id":8121,"symbol":"SPHL"},{"companyName":"Peoples Power Limited","id":8122,"symbol":"PPL"},{"companyName":"Dhaulagiri laghubitta Sanstha Limited","id":8123,"symbol":"DLBS"},{"companyName":"NMB Capital Ltd.","id":8125,"symbol":"NSIF2"},{"companyName":"Sikles Hydropower Limited","id":8126,"symbol":"SIKLES"},{"companyName":"Kumari Bank Limited","id":8127,"symbol":"KBLD89"},{"companyName":"Eastern Hydropower Limited","id":8131,"symbol":"EHPL"},{"companyName":"Shrijanshil Laghubitta Baittiya sanstha Limited","id":8132,"symbol":"SHLB"},{"companyName":"Peoples Hydropower Company Limited","id":8133,"symbol":"PHCL"},{"companyName":"Barahi Hydropower Public Limited","id":9135,"symbol":"BHPL"},{"companyName":"Bank of Kathmandu Ltd.","id":9136,"symbol":"BOKD86KA"},{"companyName":"Himalayan Bank Limited","id":9137,"symbol":"HBLD86"},{"companyName":"NIBL Growth Fund","id":9138,"symbol":"NIBLGF"},{"companyName":"Sanima Growth Fund","id":9139,"symbol":"SAGF"},{"companyName":"Unique Nepal Laghubitta Bittiya Sanstha Limited","id":9140,"symbol":"UNLB"},{"companyName":"Nepal Infrastructure Bank Limited","id":9141,"symbol":"NIFRAUR85/86"},{"companyName":"Super Madi Hydropower Limited","id":9146,"symbol":"SMHL"},{"companyName":"SHUVAM POWER LIMITED","id":9147,"symbol":"SPL"},{"companyName":"Supermai Hydropower Limited","id":9148,"symbol":"SMH"},{"companyName":"Maya Khola Hydropower Company Limited","id":9149,"symbol":"MKHC"},{"companyName":"Asian Hydropower Limited","id":9150,"symbol":"AHL"},{"companyName":"KALINCHOWK DARSHAN LIMITED ","id":9151,"symbol":"KDL"},{"companyName":"Everest Bank Limited","id":9152,"symbol":"EBLEB89"},{"companyName":"Sunrise Capital Limited","id":9154,"symbol":"SFEF"},{"companyName":"Sanima Middle Tamor Hydropower Limited","id":9156,"symbol":"TAMOR"},{"companyName":"Molung Hydropower Company Limited","id":9158,"symbol":"MHCL"},{"companyName":"Sagarmatha Jalabidhyut Company Limited","id":9159,"symbol":"SMJC"},{"companyName":"Aatmanirbhar Laghubitta Bittitya Sanstha Limited","id":9161,"symbol":"ANLB"},{"companyName":"Makar Jitumaya Suri Hydropower Ltd ","id":9166,"symbol":"MAKAR"},{"companyName":"MaiKhola Hydropower Limited","id":9167,"symbol":"MKHL"},{"companyName":"Global IME Bank Limited","id":9168,"symbol":"GBILD84/85"},{"companyName":"Dolti Power Company Ltd.","id":9170,"symbol":"DOLTI"},{"companyName":"Bhugol Energy Development Company Ltd","id":9171,"symbol":"BEDC"},{"companyName":"CITY HOTEL LIMITED ","id":9173,"symbol":"CITY"},{"companyName":"Prabhu Capital Limited","id":9174,"symbol":"PRSF"},{"companyName":"Menchhiyam Hydro Power Ltd","id":9175,"symbol":"MCHL"},{"companyName":"Ingwa Hydropower Limited","id":9176,"symbol":"IHL"},{"companyName":"Standard Chartered Bank  Nepal Limited","id":9177,"symbol":"SCBD"},{"companyName":"RBB Merchant Banking Limited","id":9178,"symbol":"RMF2"},{"companyName":"Modi Energy Limited","id":9179,"symbol":"MEL"},{"companyName":"NMB Bank Limited","id":9180,"symbol":"NMBD89/90"},{"companyName":"Rawa Energy Development Ltd.","id":9181,"symbol":"RAWA"},{"companyName":"Siddhartha Bank Limited","id":9182,"symbol":"SIGS3"},{"companyName":"Nepal Republic Media Ltd","id":9183,"symbol":"NRM"},{"companyName":"I.M.E. Life Insurance company Limited ","id":9184,"symbol":"ILI"},{"companyName":"Citizens Bank International Limited","id":9191,"symbol":"C30MF"},{"companyName":" Upper Syange Hydropower Limited","id":9192,"symbol":"USHL"},{"companyName":"Ghorahi Cement Industry Limited","id":9193,"symbol":"GCIL"},{"companyName":"Three Star Hydropower Ltd","id":9194,"symbol":"TSHL"},{"companyName":"Mahalaxmi Bikas Bank Ltd.","id":9195,"symbol":"MLBLD89"},{"companyName":"Kutheli Bukhari Small Hydropower Ltd","id":9196,"symbol":"KBSH"},{"companyName":"Lumbini Bikas Bank Ltd.","id":9197,"symbol":"LBBLD89"},{"companyName":"Laxmi Sunrise Bank Limited","id":9198,"symbol":"LVF2"},{"companyName":"Reliable Nepal Life Insurance Ltd","id":9199,"symbol":"RNLI"},{"companyName":"Sun Nepal Life Insurance Company Limited","id":9201,"symbol":"SNLI"},{"companyName":"Manakamana Engineering Hydropower Limited","id":9203,"symbol":"MEHL"},{"companyName":"Upper Lohore Khola Hydropower Company Limited","id":9208,"symbol":"ULHC"},{"companyName":"Citizen Life Insurance Company Limited","id":9209,"symbol":"CLI"},{"companyName":"Nepal SBI Bank Limited","id":9211,"symbol":"SBID89"},{"companyName":"Mandu Hydropower Limited","id":9212,"symbol":"MANDU"},{"companyName":"HATHWAY INVESTMENT NEPAL LIMITED","id":9213,"symbol":"HATHY"},{"companyName":"Bhagawati Hyropower Development Company Ltd.","id":9214,"symbol":"BGWT"},{"companyName":"Mid solu Hydropower Limited","id":9215,"symbol":"MSHL"},{"companyName":"Sonapur Minerals And Oil Limited","id":9216,"symbol":"SONA"},{"companyName":"Mathillo Mailun Khola Jalvidhyut Ltd.","id":9217,"symbol":"MMKJL"},{"companyName":"Trishuli Jal Vidhyut Company Limited ","id":9218,"symbol":"TVCL"},{"companyName":"Kumari Bank Limited","id":9220,"symbol":"KBLD90"},{"companyName":"Himalayan Bank Limited","id":9221,"symbol":"H8020"},{"companyName":"Vision Lumbini Urja Company Limited","id":9225,"symbol":"VLUCL"},{"companyName":"Muktinath Krishi Company Limited","id":9230,"symbol":"MKCL"},{"companyName":"Citizens Bank International Limited","id":9231,"symbol":"CIZBD90"},{"companyName":"Chirkhwa Hydropower Limited","id":9232,"symbol":"CKHL"},{"companyName":"Nepal Warehousing Company Limited","id":9233,"symbol":"NWCL"},{"companyName":"Himalayan Reinsurance Limited","id":9234,"symbol":"HRL"},{"companyName":"NIC Asia Bank Ltd.","id":9236,"symbol":"NICGF2"},{"companyName":"Nabil Bank Limited","id":9238,"symbol":"NABILD87"},{"companyName":"Kumari Bank Limited","id":9241,"symbol":"KSY"},{"companyName":"Sarbottam Cement Limited","id":9242,"symbol":"SARBTM"},{"companyName":"Nepal Investment Mega Bank Limited","id":9243,"symbol":"NIMBD90"},{"companyName":"Nepal Investment Mega Bank Limited","id":9244,"symbol":"NIBLSTF"}]
+    const endpoints = {
+        '/company/floorsheet': ['company_id', 'size', 'date'],
+        '/company/trading-history': ['company_id', 'size', 'start_date', 'end_date'],
+        '/day-floorsheet': ['date'],
+        '/analyze/floorsheet/broker-buy-sell': ['date'],
+        '/analyze/floorsheet/broker-sector': ['date'],
+        '/analyze/floorsheet/broker': ['date'],
+        '/floor-sheet': ['size'],
+        '/analyze/floorsheet/broker-transactions': ['date'],
+        '/analyze/floorsheet/top-brokers': ['date'],
+        '/analyze/floorsheet/traded-stocks': ['date'],
+        '/analyze/floorsheet/stock-volatility': ['date'],
+        '/analyze/floorsheet/buyer-seller': ['date'],
+        '/company/price-volume': ['company_id'],
+        '/company/news': ['company_id'],
+        '/company/dividend': ['company_id'],
+        '/company/reports': ['company_id'],
+        '/company/detail': ['company_id'],
+        '/company/daily-graph': ['company_id'],
+        '/company-profile': ['company_id'],
+        '/broker-list': ['size'],
+        '/average-trading': [],
+        '/sectorwise': [],
+        '/holidays': [],
+        '/subindex': [],
+        '/nepse-index': [],
+        '/sector-companies': [],
+        '/price-volume': [],
+        '/live-market': [],
+        '/market-open': [],
+        '/supply-demand': [],
+        '/market-summary': [],
+        '/market-summary-history': [],
+        '/company-list': [],
+        '/security-list': [],
+        '/top-gainer': [],
+        '/top-loser': [],
+        '/top-turnover': [],
+        '/top-volume': [],
+        '/top-transaction': [],
+        '/todays-price': [],
+        '/graph-index': [],
+        '/banking-index': [],
+        '/dev-bank-index': [],
+        '/finance-index': [],
+        '/hotel-index': [],
+        '/hydro-index': [],
+        '/investment-index': [],
+        '/life-ins-index': [],
+        '/non-life-ins-index': [],
+        '/manufacturing-index': [],
+        '/microfinance-index': [],
+        '/trading-index': [],
+        '/mutual-fund-index': [],
+        '/others-index': [],
+    }
+    // Function to create and append list items
+    function createEndpointList() {
+        const endpointList = document.getElementById('endpoint-list');
+        Object.keys(endpoints).forEach(endpoint => {
+            const listItem = document.createElement('li');
+            listItem.classList.add('endpoint-item');
+            const link = document.createElement('a');
+            link.href = '#';
+            link.textContent = endpoint;
+            link.onclick = () => openEndpoint(endpoint);
+            listItem.appendChild(link);
+            endpointList.appendChild(listItem);
+        });
+    }
+    function openEndpoint (endpoint) {
+        const params = endpoints[endpoint] ?? []
+        const keyVal = params.map(p => `${p}=${document.getElementById(p).value}`)
+        if (keyVal.length > 0) {
+            window.open(`${endpoint}?${keyVal.join('&')}`, '_blank')
+        } else {
+            window.open(endpoint, '_blank')
+        }
+    }
+    function autocompleteCompany(event) {
+        const inputField = event.target;
+        const suggestionsDiv = document.querySelector('.autocomplete-suggestions');
+        const query = inputField.value.toLowerCase();
+        suggestionsDiv.innerHTML = '';
+        suggestionsDiv.style.display = 'none';
+        if (query.length > 0) {
+            const filteredCompanies = companies.filter(company =>
+                company.companyName.toLowerCase().includes(query) ||
+                company.symbol.toLowerCase().includes(query) ||
+                company.id.toString().includes(query)
+            );
+            if (filteredCompanies.length > 0) {
+                suggestionsDiv.style.display = 'block';
+                filteredCompanies.forEach(company => {
+                    const suggestion = document.createElement('div');
+                    suggestion.classList.add('autocomplete-suggestion');
+                    suggestion.textContent = `${company.companyName} (${company.symbol}) - ID: ${company.id}`;
+                    suggestion.onclick = () => selectCompany(company, inputField);
+                    suggestionsDiv.appendChild(suggestion);
+                });
+            }
+        }
+    }
+    function selectCompany(company, inputField) {
+        const companyIdField = document.querySelector('.company-id');
+        inputField.value = company.id;
+        companyIdField.value = company.id;
+        document.querySelector('.autocomplete-suggestions').style.display = 'none';
+    }
+    // Fetch the market open data and set the date
+    window.onload = function() {
+        fetch('/market-open')
+            .then(response => response.json())
+            .then(data => {
+                const marketOpenDate = data.asOf.split('T')[0]; // Extract date part from the 'asOf' field (YYYY-MM-DD)
+                // Set the value for all date fields with the class 'date-field'
+                const dateFields = document.querySelectorAll('.date-field');
+                dateFields.forEach(dateField => {
+                    dateField.value = marketOpenDate;
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching market open data:', error);
+            });
+    }
+    createEndpointList()
+</script>
+
+</html>
