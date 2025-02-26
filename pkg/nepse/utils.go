@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"time"
-	
+
 	"github.com/oarkflow/trading/pkg/nepse/models"
 	"github.com/oarkflow/trading/pkg/utils"
 )
@@ -40,108 +40,108 @@ var (
 	// floorsheetDir: Directory where daily floorsheet JSON files are stored.
 	// These files contain historical transaction data that are grouped by day.
 	floorsheetDir = DataPath + "/" + DateFloorsheetPath
-	
+
 	// liveFloorsheetDir: Directory containing live (or near-live) floorsheet data.
 	liveFloorsheetDir = DataPath + "/" + LiveFloorsheetPath
-	
+
 	// liveSummaryFile: File path to the live summary JSON file that holds metadata (like latest page).
 	liveSummaryFile = DataPath + "/" + LiveFloorsheetPath + "/summary.json"
-	
+
 	// holdingsFile: File path to the JSON file with current holdings information.
 	holdingsFile = DataPath + "/holdings.json"
-	
+
 	// dailyInterval: Interval used for creating daily candles.
 	// Since this is set to 24 hours, each candle represents one day.
 	dailyInterval = 24 * time.Hour
-	
+
 	// intradayInterval: Interval for intraday analysis.
 	// With a 15-minute interval, you get more granular data during a single day.
 	intradayInterval                = 15 * time.Minute
 	floorSheetBuyImbalanceThreshold = 1.5 // e.g. 50% higher buy vs sell volume
 	floorSheetLargeTradeMultiplier  = 3.0 // trade volume >3x average trade volume
 	liveInterval                    = 15 * time.Minute
-	
+
 	// smaPeriod: The number of candles (days, when using daily data) used to compute the Simple Moving Average.
 	// For example, if you have daily candles, smaPeriod = 15 means a 15-day moving average.
 	// If analyzing only the last 15 days of data, using 15 might be too long (using all available days),
 	// so you might reduce it (e.g., to 5 or 7) for a more responsive average.
 	smaPeriod = 15
-	
+
 	// rsiPeriod: The number of days used to compute the Relative Strength Index.
 	// Standard RSI uses 14 periods; however, if you have only 15 days of data, you might consider a shorter period (e.g., 7)
 	// to capture more meaningful momentum changes.
 	rsiPeriod = 14
-	
+
 	// macdShortPeriod: The short-term period for the MACD calculation (typically in days).
 	// Standard settings use 12 days, but if your overall dataset is short (15 days), you may need to scale this down.
 	macdShortPeriod = 12
-	
+
 	// macdLongPeriod: The long-term period for the MACD calculation (in days).
 	// Typically set to 26 days; if you have fewer days, a proportional reduction (e.g., to 11 or 13) might be necessary.
 	macdLongPeriod = 26
-	
+
 	// macdSignalPeriod: The period used to compute the MACD signal line (in days).
 	// Standard is 9, and it should be in proportion to the short and long periods.
 	macdSignalPeriod = 9
-	
+
 	// rsiThreshold: The RSI threshold for signal generation.
 	// An RSI above 50 typically indicates bullish momentum, while below 50 indicates bearish momentum.
 	rsiThreshold = 50.0
-	
+
 	// boomVolumeThreshold: A threshold for trading volume to indicate an unusually high volume (a “boom”).
 	// This is an absolute value, so higher volumes than this trigger additional signals.
 	boomVolumeThreshold = float64(10000)
-	
+
 	// boomPriceThreshold: The percentage price change threshold that, when combined with volume,
 	// may indicate a strong move (or boom) in price.
 	boomPriceThreshold = 5.0
-	
+
 	// stopLossPercent: The percentage distance from the entry price used to set a stop loss.
 	// A tighter stop loss (smaller percentage) reduces risk but may increase stop-outs.
 	stopLossPercent = 2.0
-	
+
 	// takeProfitPercent: The percentage target for taking profit relative to the entry price.
 	// A higher take profit allows for larger gains but might be less frequently reached.
 	takeProfitPercent = 4.0
-	
+
 	// settlementDays: The minimum number of days to hold a position due to settlement requirements.
 	// For example, 4 days might be required by the market structure or regulations.
 	settlementDays = 4
-	
+
 	// bollingerPeriod: The number of days used to calculate Bollinger Bands.
 	// For daily data, a typical value is 20 days. However, if you only have 15 days of data,
 	// you may want to reduce this to better reflect the shorter timeframe (e.g., 10 days).
 	bollingerPeriod = 20
-	
+
 	// bollingerMultiplier: The number of standard deviations used to set the upper and lower Bollinger Bands.
 	// The standard multiplier is 2.0; this remains independent of the dataset length.
 	bollingerMultiplier = 2.0
-	
+
 	// stochasticPeriod: The number of days for calculating the stochastic oscillator.
 	// Standard value is 14 days, but with a shorter dataset, a lower period might be more responsive.
 	stochasticPeriod = 14
-	
+
 	// atrPeriod: The number of days used to compute the Average True Range, a measure of volatility.
 	// With a shorter dataset (e.g., 15 days), you might consider a lower period for a more reactive ATR.
 	atrPeriod = 14
-	
+
 	// -----------------------------------------------------------------
 	// smcPeriod: Period for Smart Money Concept analysis (BOS, CHOCH, OB, etc.).
 	//   → Default is 5 days; used to scan recent price action for key institutional signals.
 	smcPeriod = 5
-	
+
 	// emaShortPeriod: Period for the short-term Exponential Moving Average (EMA) in crossover analysis.
 	//   → Default is 12 days; a standard value used in many technical analysis strategies.
 	emaShortPeriod = 12
-	
+
 	// emaLongPeriod: Period for the long-term EMA in crossover analysis.
 	//   → Default is 26 days; used in conjunction with emaShortPeriod to detect trend shifts.
 	emaLongPeriod = 26
-	
+
 	// atrThreshold: The threshold for ATR to determine high or low volatility.
 	// This is generally a relative measure and may not need adjustment based on the dataset length.
 	atrThreshold = 2.0
-	
+
 	stopRunVolumeMultiplier   = 1.5  // Current volume must exceed this times average volume.
 	stopRunGapThreshold       = 0.02 // 2% gap threshold.
 	volumeImbalanceMultiplier = 1.5  // Factor for high volume imbalance.
@@ -209,17 +209,17 @@ const (
 	LIVE_MARKET  = "/api/nots/lives-market"
 	BROKER_LIST  = "/api/nots/member"
 	PRICE_VOLUME = "/api/nots/securityDailyTradeStat/58"
-	
+
 	SECURITIES_LISTING         = "/api/nots/security?nonDelisted=true"
 	SECURITIES_FLOORSHEET      = "/api/nots/security/floorsheet"
 	SECURITIES_DETAIL          = "/api/nots/security"
 	SECURITIES_DAILY_GRAPH     = "/api/nots/market/graphdata/daily"
 	SECURITIES_PRICE_VOLUME    = "/api/nots/market/security/price"
 	SECURITIES_TRADING_HISTORY = "/api/nots/market/history/security"
-	
+
 	HOLIDAYS  = "/api/nots/holiday/list"
 	FILE_LINK = "/api/nots/security/fetchFiles"
-	
+
 	BANKING_INDEX       = "/api/nots/graph/index/51"
 	HOTEL_INDEX         = "/api/nots/graph/index/52"
 	OTHERS_INDEX        = "/api/nots/graph/index/53"
@@ -234,11 +234,11 @@ const (
 	LIFE_INS_INDEX      = "/api/nots/graph/index/65"
 	MUTUAL_FUND_INDEX   = "/api/nots/graph/index/66"
 	INVESTMENT_INDEX    = "/api/nots/graph/index/67"
-	
+
 	FLOORSHEET  = "/api/nots/nepse-data/floorsheet"
 	NEPSE_INDEX = "/api/nots/nepse-index"
 	SECTORWISE  = "/api/nots/sectorwise"
-	
+
 	COMPANY_LIST           = "/api/nots/company/list"
 	COMPANY_PROFILE        = "/api/nots/security/profile"
 	ALERTS                 = "/api/nots/news/media/news-and-alerts"
@@ -255,7 +255,7 @@ const (
 	TOP_TRANSACTION        = "/api/nots/top-ten/transaction?all=true"
 	SUPPLY_DEMAND          = "/api/nots/nepse-data/supplydemand"
 	MARKET_SUMMARY         = "/api/nots/market-summary"
-	
+
 	GET  = "GET"
 	POST = "POST"
 )
@@ -315,14 +315,14 @@ func getScaledSignalPeriods(availableDays int) models.SignalPeriods {
 
 // Range defines a date range.
 type Range struct {
-	Start string `json:"start"`
-	End   string `json:"end"`
-	start time.Time
-	end   time.Time
+	Start     string `json:"start"`
+	End       string `json:"end"`
+	StartTime time.Time
+	EndTime   time.Time
 }
 
-// getDateRange returns a slice of dates between start and end.
-func getDateRange(start, end time.Time) []string {
+// GetDateRange returns a slice of dates between StartTime and EndTime.
+func GetDateRange(start, end time.Time) []string {
 	var dateRange []string
 	for current := start; !current.After(end); current = current.AddDate(0, 0, 1) {
 		dateRange = append(dateRange, current.Format(time.DateOnly))
@@ -330,20 +330,20 @@ func getDateRange(start, end time.Time) []string {
 	return dateRange
 }
 
-func getDate(dateRange ...*Range) (*Range, error) {
+func GetDate(dateRange ...*Range) (*Range, error) {
 	var date *Range
 	if len(dateRange) == 0 {
 		now := time.Now()
 		start := now.AddDate(0, 0, -30)
-		date = &Range{start: start, end: now, Start: start.Format(time.DateOnly), End: now.Format(time.DateOnly)}
+		date = &Range{StartTime: start, EndTime: now, Start: start.Format(time.DateOnly), End: now.Format(time.DateOnly)}
 		return date, nil
 	}
 	date = dateRange[0]
 	var err error
-	date.start, err = time.Parse(time.DateOnly, date.Start)
+	date.StartTime, err = time.Parse(time.DateOnly, date.Start)
 	if err != nil {
 		return nil, err
 	}
-	date.end, err = time.Parse(time.DateOnly, date.End)
+	date.EndTime, err = time.Parse(time.DateOnly, date.End)
 	return date, err
 }

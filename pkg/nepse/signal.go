@@ -20,7 +20,7 @@ import (
 func loadDailyFloorsheet(dir, _ string, date ...*Range) ([]models.FloorSheet, error) {
 	var dateRange []string
 	if len(date) > 0 {
-		dateRange = getDateRange(date[0].start, date[0].end)
+		dateRange = GetDateRange(date[0].StartTime, date[0].EndTime)
 	}
 	var sheets []models.FloorSheet
 	files, err := filepath.Glob(filepath.Join(dir, "*.json"))
@@ -417,7 +417,7 @@ func GetLiveAnalysis(interval time.Duration) ([]models.StockAnalysis, error) {
 }
 
 func GetAnalysis(dateRange ...*Range) (models.AnalysisResult, error) {
-	date, err := getDate(dateRange...)
+	date, err := GetDate(dateRange...)
 	if err != nil {
 		return models.AnalysisResult{}, err
 	}

@@ -739,7 +739,7 @@ func (n *Trader) CollectAllFloorSheets() error {
 				n.Token = ""
 				fmt.Println("Reset Token")
 			}
-			log.Printf("Error fetching page %d: %v. Retrying...", page, err)
+			log.Printf("Error fetching page %d: %v in CollectAllFloorSheets. Retrying...", page, err)
 			time.Sleep(1 * time.Second)
 		}
 		if err != nil {
@@ -819,8 +819,12 @@ func (n *Trader) CollectAllCompanyFloorSheets(dates ...string) error {
 	if err != nil {
 		return err
 	}
-	for _, company := range companies {
-		for _, date := range dates {
+	for _, date := range dates {
+		now, _ := time.Parse(time.DateOnly, date)
+		if isHoliday(now, n.HolidayDates()...) {
+			continue
+		}
+		for _, company := range companies {
 			baseDir := getCompanyFloorsheetPath(company.Id, date)
 			if _, err := os.Stat(baseDir); os.IsNotExist(err) {
 				n.CollectCompanyFloorSheets(company.Id, date)
@@ -828,6 +832,7 @@ func (n *Trader) CollectAllCompanyFloorSheets(dates ...string) error {
 			}
 		}
 	}
+
 	return nil
 }
 
@@ -877,7 +882,7 @@ func (n *Trader) CollectCompanyFloorSheets(id int, dates ...string) error {
 				n.Token = ""
 				fmt.Println("Reset Token")
 			}
-			log.Printf("Error fetching page %d: %v. Retrying...", page, err)
+			log.Printf("Error fetching page %d: %v in CollectCompanyFloorSheets. Retrying...", page, err)
 			time.Sleep(1 * time.Second)
 		}
 		if err != nil {
